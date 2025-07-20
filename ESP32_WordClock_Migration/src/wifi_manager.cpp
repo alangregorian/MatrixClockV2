@@ -17,12 +17,12 @@ void scanWiFiNetworks(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
   tft.setCursor(10, 10);
   tft.println("Scanning...");
   
-  // Update NeoMatrix to show scanning
-  matrix.fillScreen(0);
-  for(int i = 0; i < 8; i++) {
-    matrix.drawPixel(i, 0, matrix.Color(50, 50, 0)); // Yellow top row
-  }
-  matrix.show();
+  // Update NeoMatrix to show scanning - DISABLED (no hardware connected)
+  // matrix.fillScreen(0);
+  // for(int i = 0; i < 8; i++) {
+  //   matrix.drawPixel(i, 0, matrix.Color(50, 50, 0)); // Yellow top row
+  // }
+  // matrix.show();
   
   // Perform WiFi scan
   networkCount = WiFi.scanNetworks();
@@ -41,9 +41,9 @@ void scanWiFiNetworks(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
     tft.setCursor(10, 60);
     tft.println("Found");
     
-    // Red pattern on NeoMatrix
-    matrix.fillScreen(matrix.Color(50, 0, 0));
-    matrix.show();
+    // Red pattern on NeoMatrix - DISABLED (no hardware connected)
+    // matrix.fillScreen(matrix.Color(50, 0, 0));
+    // matrix.show();
   } else {
     currentNetwork = 0; // Reset to first network
   }
@@ -93,8 +93,8 @@ void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
   tft.setCursor(5, 110);
   tft.println("D0:Down D1:Up D2:Rescan");
   
-  // Update NeoMatrix with signal strength visualization
-  updateNeoMatrixSignal(matrix, rssi);
+  // Update NeoMatrix with signal strength visualization - DISABLED (no hardware connected)
+  // updateNeoMatrixSignal(matrix, rssi);
   
   // Print to serial for debugging
   Serial.printf("Network %d: %s (%d dBm) %s\n", 

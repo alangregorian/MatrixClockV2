@@ -37,6 +37,10 @@ enum SystemState {
 SystemState currentState = STATE_INIT;
 SystemState previousState = STATE_INIT;
 
+// Display update tracking
+bool displayNeedsUpdate = true;
+bool stateChanged = false;
+
 // TFT Display pins are predefined by ESP32-S2 Reverse TFT Feather board variant
 // TFT_CS = 42, TFT_RST = 41, TFT_DC = 40, TFT_MOSI = 35, TFT_SCLK = 36, TFT_BACKLIGHT = 45
 
@@ -60,6 +64,8 @@ void changeState(SystemState newState) {
   if (newState != currentState) {
     previousState = currentState;
     currentState = newState;
+    stateChanged = true;
+    displayNeedsUpdate = true;
     Serial.printf("State transition: %d -> %d\n", previousState, currentState);
   }
 }
@@ -70,26 +76,60 @@ void setup() {
   
   Serial.println("ESP32-S2 WordClock Migration - State Machine");
   Serial.println("============================================");
+  Serial.println("DEBUG: Setup started");
+  Serial.flush();
   
   // Initialize hardware
+  Serial.println("DEBUG: About to initialize buttons");
+  Serial.flush();
   initializeButtons();
+  Serial.println("DEBUG: Buttons initialized successfully");
+  Serial.flush();
+  
+  Serial.println("DEBUG: About to initialize display");
+  Serial.flush();
   initializeDisplay(tft, matrix);
+  Serial.println("DEBUG: Display initialized successfully");
+  Serial.flush();
   
   // Initialize WiFi
+  Serial.println("DEBUG: About to initialize WiFi");
+  Serial.flush();
   WiFi.mode(WIFI_STA);
+  Serial.println("DEBUG: WiFi mode set to STA");
+  Serial.flush();
+  
   WiFi.disconnect();
+  Serial.println("DEBUG: WiFi disconnected");
+  Serial.flush();
+  
   delay(100);
+  Serial.println("DEBUG: WiFi initialization complete");
+  Serial.flush();
   
   // Show startup message
+  Serial.println("DEBUG: About to display startup message");
+  Serial.flush();
   displayStartupMessage(tft);
+  Serial.println("DEBUG: Startup message displayed");
+  Serial.flush();
   
   // Initialize NeoMatrix startup pattern
-  showStartupPattern(matrix);
+  Serial.println("DEBUG: About to show startup pattern");
+  Serial.flush();
+  // TEMPORARILY DISABLED - NeoMatrix causing reset
+  // showStartupPattern(matrix);
+  Serial.println("DEBUG: NeoMatrix startup pattern skipped (disabled)");
+  Serial.flush();
   
   delay(2000);
+  Serial.println("DEBUG: About to change state to WIFI_SCAN");
+  Serial.flush();
   
   // Transition to WiFi scanning state
   changeState(STATE_WIFI_SCAN);
+  Serial.println("DEBUG: Setup complete - entering main loop");
+  Serial.flush();
 }
 
 void loop() {
@@ -104,29 +144,40 @@ void loop() {
       break;
       
     case STATE_WIFI_SCAN:
-      // Perform WiFi scan
-      scanWiFiNetworks(tft, matrix);
+      // Perform WiFi scan only once per state entry
+      if (stateChanged || displayNeedsUpdate) {
+        scanWiFiNetworks(tft, matrix);
+        stateChanged = false;
+        displayNeedsUpdate = true; // Will need to display results
+      }
       changeState(STATE_WIFI_DISPLAY);
       break;
       
     case STATE_WIFI_DISPLAY:
       // Display current network and handle navigation
       if (getNetworkCount() > 0) {
-        displayCurrentNetwork(tft, matrix);
+        // Only update display when needed
+        if (displayNeedsUpdate || stateChanged) {
+          displayCurrentNetwork(tft, matrix);
+          displayNeedsUpdate = false;
+          stateChanged = false;
+        }
         
         // Handle button events
         switch (buttonEvent) {
           case BUTTON_A_PRESSED:
             nextNetwork();
+            displayNeedsUpdate = true;  // Network changed, need to update display
             break;
           case BUTTON_B_PRESSED:
             previousNetwork();
+            displayNeedsUpdate = true;  // Network changed, need to update display
             break;
           case BUTTON_C_PRESSED:
             changeState(STATE_WIFI_SCAN);  // Rescan
             break;
           case NO_BUTTON:
-            // Stay in display state
+            // Stay in display state - no update needed
             break;
         }
       }
