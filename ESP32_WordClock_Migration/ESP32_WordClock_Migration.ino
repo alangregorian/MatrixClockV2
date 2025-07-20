@@ -66,9 +66,9 @@ void setup() {
   Serial.println("=====================================");
   
   // Initialize buttons
-  pinMode(BUTTON_A, INPUT_PULLUP);
-  pinMode(BUTTON_B, INPUT_PULLUP);
-  pinMode(BUTTON_C, INPUT_PULLUP);
+  pinMode(BUTTON_A, INPUT_PULLUP);  // D0: pulled HIGH, goes LOW when pressed
+  pinMode(BUTTON_B, INPUT);         // D1: pulled LOW by hardware, goes HIGH when pressed
+  pinMode(BUTTON_C, INPUT);         // D2: pulled LOW by hardware, goes HIGH when pressed
   
   // Initialize TFT backlight
   Serial.println("Initializing TFT backlight...");
@@ -136,10 +136,7 @@ void loop() {
   // Check for button presses
   handleButtons();
   
-  // Periodic WiFi scan
-  if (millis() - lastScan > SCAN_INTERVAL) {
-    scanWiFiNetworks();
-  }
+  // Removed periodic WiFi scan - only scan on button press or startup
   
   delay(50); // Small delay to prevent excessive CPU usage
 }
@@ -229,7 +226,7 @@ void displayCurrentNetwork() {
   tft.setTextColor(ST77XX_GREEN);
   tft.setTextSize(1);
   tft.setCursor(5, 110);
-  tft.println("A:Up B:Down C:Rescan");
+  tft.println("D0:Down D1:Up D2:Rescan");
   
   // Update NeoMatrix with signal strength visualization
   updateNeoMatrixSignal(rssi);
@@ -245,47 +242,55 @@ void displayCurrentNetwork() {
 void handleButtons() {
   unsigned long currentTime = millis();
   
+  // Debug: Print button states every 2 seconds
+  static unsigned long lastDebug = 0;
+  if (currentTime - lastDebug > 2000) {
+    Serial.printf("Button states - D0:%d D1:%d D2:%d\n", 
+                  digitalRead(BUTTON_A), digitalRead(BUTTON_B), digitalRead(BUTTON_C));
+    lastDebug = currentTime;
+  }
+  
   // Debounce check
   if (currentTime - lastButtonPress < DEBOUNCE_DELAY) {
     return;
   }
   
-  // Button A (Up/Previous)
+  // Button A / D0 (Down/Next)
   if (digitalRead(BUTTON_A) == LOW && !buttonA_pressed) {
     buttonA_pressed = true;
     lastButtonPress = currentTime;
     
     if (networkCount > 0) {
-      currentNetwork = (currentNetwork - 1 + networkCount) % networkCount;
+      currentNetwork = (currentNetwork + 1) % networkCount;
       displayCurrentNetwork();
-      Serial.printf("Button A: Previous network (%d)\n", currentNetwork);
+      Serial.printf("Button D0: Next network (%d)\n", currentNetwork);
     }
   } else if (digitalRead(BUTTON_A) == HIGH) {
     buttonA_pressed = false;
   }
   
-  // Button B (Down/Next)
-  if (digitalRead(BUTTON_B) == LOW && !buttonB_pressed) {
+  // Button B / D1 (Up/Previous) - D1 goes HIGH when pressed
+  if (digitalRead(BUTTON_B) == HIGH && !buttonB_pressed) {
     buttonB_pressed = true;
     lastButtonPress = currentTime;
     
     if (networkCount > 0) {
-      currentNetwork = (currentNetwork + 1) % networkCount;
+      currentNetwork = (currentNetwork - 1 + networkCount) % networkCount;
       displayCurrentNetwork();
-      Serial.printf("Button B: Next network (%d)\n", currentNetwork);
+      Serial.printf("Button D1: Previous network (%d)\n", currentNetwork);
     }
-  } else if (digitalRead(BUTTON_B) == HIGH) {
+  } else if (digitalRead(BUTTON_B) == LOW) {
     buttonB_pressed = false;
   }
   
-  // Button C (Rescan)
-  if (digitalRead(BUTTON_C) == LOW && !buttonC_pressed) {
+  // Button C / D2 (Rescan) - D2 goes HIGH when pressed
+  if (digitalRead(BUTTON_C) == HIGH && !buttonC_pressed) {
     buttonC_pressed = true;
     lastButtonPress = currentTime;
     
-    Serial.println("Button C: Rescanning WiFi networks");
+    Serial.println("Button D2: Rescanning WiFi networks");
     scanWiFiNetworks();
-  } else if (digitalRead(BUTTON_C) == HIGH) {
+  } else if (digitalRead(BUTTON_C) == LOW) {
     buttonC_pressed = false;
   }
 }
