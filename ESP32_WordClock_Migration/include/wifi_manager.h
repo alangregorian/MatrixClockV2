@@ -3,8 +3,6 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include <Adafruit_ST7789.h>
-#include <Adafruit_NeoMatrix.h>
 
 // WiFi scanning variables
 extern int networkCount;
@@ -12,16 +10,23 @@ extern int currentNetwork;
 extern unsigned long lastScan;
 extern const unsigned long SCAN_INTERVAL;
 
+// WiFi network data structure
+struct WiFiNetworkInfo {
+  String ssid;
+  int32_t rssi;
+  wifi_auth_mode_t encryption;
+};
+
 // Function declarations
-void scanWiFiNetworks(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix);
-void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix);
-uint16_t getSignalColor(int32_t rssi);
+void scanWiFiNetworks();
+WiFiNetworkInfo getCurrentNetworkInfo();
+uint16_t getSignalStrength(int32_t rssi); // Returns 0-100 percentage
 const char* getEncryptionType(wifi_auth_mode_t encryptionType);
-void updateNeoMatrixSignal(Adafruit_NeoMatrix& matrix, int32_t rssi);
 
 // Network navigation functions
 void nextNetwork();
 void previousNetwork();
 int getNetworkCount();
+bool hasNetworks();
 
 #endif // WIFI_MANAGER_H

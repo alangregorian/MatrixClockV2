@@ -22,24 +22,7 @@
 #include "include/wifi_manager.h"
 #include "include/display_manager.h"
 #include "include/button_handler.h"
-
-// System State Machine
-enum SystemState {
-  STATE_INIT,
-  STATE_WIFI_SCAN,
-  STATE_WIFI_DISPLAY,
-  STATE_WIFI_CONNECT,    // Future expansion
-  STATE_TIME_SYNC,       // Future expansion  
-  STATE_CLOCK_DISPLAY    // Future expansion
-};
-
-// Global state
-SystemState currentState = STATE_INIT;
-SystemState previousState = STATE_INIT;
-
-// Display update tracking
-bool displayNeedsUpdate = true;
-bool stateChanged = false;
+#include "include/state_machine.h"
 
 // TFT Display pins are predefined by ESP32-S2 Reverse TFT Feather board variant
 // TFT_CS = 42, TFT_RST = 41, TFT_DC = 40, TFT_MOSI = 35, TFT_SCLK = 36, TFT_BACKLIGHT = 45
@@ -59,16 +42,8 @@ Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, NEOPIN,
                             NEO_MATRIX_ROWS + NEO_MATRIX_PROGRESSIVE,
                             NEO_GRB         + NEO_KHZ800);
 
-// State transition function
-void changeState(SystemState newState) {
-  if (newState != currentState) {
-    previousState = currentState;
-    currentState = newState;
-    stateChanged = true;
-    displayNeedsUpdate = true;
-    Serial.printf("State transition: %d -> %d\n", previousState, currentState);
-  }
-}
+// State machine instance
+StateMachine stateMachine(tft, matrix);
 
 void setup() {
   Serial.begin(115200);
@@ -123,84 +98,13 @@ void setup() {
   Serial.flush();
   
   delay(2000);
-  Serial.println("DEBUG: About to change state to WIFI_SCAN");
-  Serial.flush();
-  
-  // Transition to WiFi scanning state
-  changeState(STATE_WIFI_SCAN);
   Serial.println("DEBUG: Setup complete - entering main loop");
   Serial.flush();
 }
 
 void loop() {
-  // Handle button inputs (always active)
-  ButtonEvent buttonEvent = handleButtons();
-  
-  // State machine
-  switch (currentState) {
-    case STATE_INIT:
-      // Initialization complete, move to WiFi scan
-      changeState(STATE_WIFI_SCAN);
-      break;
-      
-    case STATE_WIFI_SCAN:
-      // Perform WiFi scan only once per state entry
-      if (stateChanged || displayNeedsUpdate) {
-        scanWiFiNetworks(tft, matrix);
-        stateChanged = false;
-        displayNeedsUpdate = true; // Will need to display results
-      }
-      changeState(STATE_WIFI_DISPLAY);
-      break;
-      
-    case STATE_WIFI_DISPLAY:
-      // Display current network and handle navigation
-      if (getNetworkCount() > 0) {
-        // Only update display when needed
-        if (displayNeedsUpdate || stateChanged) {
-          displayCurrentNetwork(tft, matrix);
-          displayNeedsUpdate = false;
-          stateChanged = false;
-        }
-        
-        // Handle button events
-        switch (buttonEvent) {
-          case BUTTON_A_PRESSED:
-            nextNetwork();
-            displayNeedsUpdate = true;  // Network changed, need to update display
-            break;
-          case BUTTON_B_PRESSED:
-            previousNetwork();
-            displayNeedsUpdate = true;  // Network changed, need to update display
-            break;
-          case BUTTON_C_PRESSED:
-            changeState(STATE_WIFI_SCAN);  // Rescan
-            break;
-          case NO_BUTTON:
-            // Stay in display state - no update needed
-            break;
-        }
-      }
-      break;
-      
-    case STATE_WIFI_CONNECT:
-      // Future: Connect to selected WiFi network
-      Serial.println("WiFi Connect state - Not implemented yet");
-      changeState(STATE_WIFI_DISPLAY);
-      break;
-      
-    case STATE_TIME_SYNC:
-      // Future: NTP time synchronization
-      Serial.println("Time Sync state - Not implemented yet");
-      changeState(STATE_CLOCK_DISPLAY);
-      break;
-      
-    case STATE_CLOCK_DISPLAY:
-      // Future: WordClock display mode
-      Serial.println("Clock Display state - Not implemented yet");
-      changeState(STATE_WIFI_DISPLAY);
-      break;
-  }
+  // Update the state machine
+  stateMachine.update();
   
   delay(50); // Small delay to prevent excessive CPU usage
 }

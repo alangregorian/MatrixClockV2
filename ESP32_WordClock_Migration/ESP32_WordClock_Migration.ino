@@ -151,13 +151,6 @@ void scanWiFiNetworks() {
   tft.setCursor(10, 10);
   tft.println("Scanning...");
   
-  // Update NeoMatrix to show scanning
-  matrix.fillScreen(0);
-  for(int i = 0; i < 8; i++) {
-    matrix.drawPixel(i, 0, matrix.Color(50, 50, 0)); // Yellow top row
-  }
-  matrix.show();
-  
   // Perform WiFi scan
   networkCount = WiFi.scanNetworks();
   lastScan = millis();
@@ -174,10 +167,6 @@ void scanWiFiNetworks() {
     tft.println("Networks");
     tft.setCursor(10, 60);
     tft.println("Found");
-    
-    // Red pattern on NeoMatrix
-    matrix.fillScreen(matrix.Color(50, 0, 0));
-    matrix.show();
   } else {
     currentNetwork = 0; // Reset to first network
     displayCurrentNetwork();
@@ -228,8 +217,6 @@ void displayCurrentNetwork() {
   tft.setCursor(5, 110);
   tft.println("D0:Down D1:Up D2:Rescan");
   
-  // Update NeoMatrix with signal strength visualization
-  updateNeoMatrixSignal(rssi);
   
   // Print to serial for debugging
   Serial.printf("Network %d: %s (%d dBm) %s\n", 
@@ -317,28 +304,6 @@ void drawSignalBars(int32_t rssi, int x, int y) {
   }
 }
 
-void updateNeoMatrixSignal(int32_t rssi) {
-  matrix.fillScreen(0);
-  
-  // Convert RSSI to number of lit pixels (0-8)
-  int pixels = 0;
-  if (rssi > -80) pixels = 2;
-  if (rssi > -70) pixels = 4;
-  if (rssi > -60) pixels = 6;
-  if (rssi > -50) pixels = 8;
-  
-  // Light up pixels in a column to show signal strength
-  uint32_t color = matrix.Color(0, 50, 0); // Green for good signal
-  if (rssi < -70) color = matrix.Color(50, 25, 0); // Orange for fair
-  if (rssi < -80) color = matrix.Color(50, 0, 0);  // Red for poor
-  
-  for (int i = 0; i < pixels; i++) {
-    matrix.drawPixel(3, 7 - i, color); // Center column, bottom up
-    matrix.drawPixel(4, 7 - i, color); // Make it 2 pixels wide
-  }
-  
-  matrix.show();
-}
 
 const char* getEncryptionType(wifi_auth_mode_t encryptionType) {
   switch (encryptionType) {
