@@ -40,6 +40,9 @@ void initializeDisplay(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
 }
 
 void displayStartupMessage(Adafruit_ST7789& tft) {
+  // Clear screen first to remove clock logo
+  tft.fillScreen(ST77XX_BLACK);
+  
   // Display startup message
   tft.setTextColor(ST77XX_WHITE);
   tft.setTextSize(2);
@@ -131,4 +134,101 @@ void drawSignalBars(Adafruit_ST7789& tft, int32_t rssi, int x, int y) {
     int barHeight = (i + 1) * 3;
     tft.fillRect(x + i * 8, y + 12 - barHeight, 6, barHeight, color);
   }
+}
+
+void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, const WiFiNetworkInfo& networkInfo) {
+  // Clear screen first to remove previous content
+  tft.fillScreen(ST77XX_BLACK);
+  
+  // Display header
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(10, 10);
+  tft.println("WiFi Networks");
+  
+  // Draw separator line
+  tft.drawLine(10, 35, 230, 35, ST77XX_BLUE);
+  
+  // Display current network info
+  tft.setTextSize(1);
+  tft.setCursor(10, 45);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("SSID: ");
+  tft.setTextColor(ST77XX_WHITE);
+  
+  // Truncate SSID if too long (max ~25 chars for 240px width)
+  String displaySSID = networkInfo.ssid;
+  if (displaySSID.length() > 25) {
+    displaySSID = displaySSID.substring(0, 22) + "...";
+  }
+  tft.println(displaySSID);
+  
+  // Display signal strength
+  tft.setCursor(10, 60);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("Signal: ");
+  tft.setTextColor(ST77XX_WHITE);
+  tft.print(networkInfo.rssi);
+  tft.print(" dBm");
+  
+  // Draw signal bars
+  drawSignalBars(tft, networkInfo.rssi, 150, 60);
+  
+  // Display encryption type
+  tft.setCursor(10, 75);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("Security: ");
+  tft.setTextColor(ST77XX_WHITE);
+  
+  // Convert encryption type to readable string
+  String encType;
+  switch (networkInfo.encryption) {
+    case WIFI_AUTH_OPEN:
+      encType = "Open";
+      tft.setTextColor(ST77XX_RED);
+      break;
+    case WIFI_AUTH_WEP:
+      encType = "WEP";
+      tft.setTextColor(ST77XX_YELLOW);
+      break;
+    case WIFI_AUTH_WPA_PSK:
+      encType = "WPA";
+      tft.setTextColor(ST77XX_GREEN);
+      break;
+    case WIFI_AUTH_WPA2_PSK:
+      encType = "WPA2";
+      tft.setTextColor(ST77XX_GREEN);
+      break;
+    case WIFI_AUTH_WPA_WPA2_PSK:
+      encType = "WPA/WPA2";
+      tft.setTextColor(ST77XX_GREEN);
+      break;
+    case WIFI_AUTH_WPA2_ENTERPRISE:
+      encType = "WPA2-ENT";
+      tft.setTextColor(ST77XX_GREEN);
+      break;
+    default:
+      encType = "Unknown";
+      tft.setTextColor(ST77XX_WHITE);
+      break;
+  }
+  tft.println(encType);
+  
+  // Display navigation instructions
+  tft.setTextColor(ST77XX_CYAN);
+  tft.setTextSize(1);
+  tft.setCursor(10, 100);
+  tft.println("A: Next  B: Prev  C: Rescan");
+  
+  // Display network count info
+  tft.setCursor(10, 115);
+  tft.setTextColor(0x7BEF); // Light gray color (RGB565 format)
+  tft.print("Network ");
+  tft.print(currentNetwork + 1);
+  tft.print(" of ");
+  tft.println(getNetworkCount());
+  
+  // Clear NeoMatrix (optional - could show signal strength pattern)
+  matrix.fillScreen(0);
+  matrix.show();
 }

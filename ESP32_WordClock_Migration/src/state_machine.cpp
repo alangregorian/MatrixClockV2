@@ -52,6 +52,10 @@ void StateMachine::update() {
       handleLogoDisplayState();
       break;
       
+    case STATE_STARTUP_MESSAGE:
+      handleStartupMessageState();
+      break;
+      
     case STATE_WIFI_SCAN:
       handleWiFiScanState();
       break;
@@ -99,6 +103,29 @@ void StateMachine::handleLogoDisplayState() {
   // Check if 4 seconds have elapsed
   if (millis() - logoStartTime >= 4000) {
     logoStartTime = 0; // Reset for next time
+    changeState(STATE_STARTUP_MESSAGE);
+  }
+}
+
+void StateMachine::handleStartupMessageState() {
+  // Display startup message only once when entering this state
+  if (stateChanged || displayNeedsUpdate) {
+    displayStartupMessage(tft);
+    stateChanged = false;
+    displayNeedsUpdate = false;
+  }
+  
+  // Use static variable to track timing for this state
+  static unsigned long messageStartTime = 0;
+  
+  // Initialize timer on first entry
+  if (messageStartTime == 0) {
+    messageStartTime = millis();
+  }
+  
+  // Check if 3 seconds have elapsed
+  if (millis() - messageStartTime >= 3000) {
+    messageStartTime = 0; // Reset for next time
     changeState(STATE_WIFI_SCAN);
   }
 }
@@ -123,8 +150,8 @@ void StateMachine::handleWiFiDisplayState() {
     if (displayNeedsUpdate || stateChanged) {
       // Get current network info from wifi_manager
       WiFiNetworkInfo networkInfo = getCurrentNetworkInfo();
-      // Display it using display_manager (function needs to be implemented)
-      // displayCurrentNetwork(tft, matrix, networkInfo);
+      // Display it using display_manager
+      displayCurrentNetwork(tft, matrix, networkInfo);
       displayNeedsUpdate = false;
       stateChanged = false;
     }

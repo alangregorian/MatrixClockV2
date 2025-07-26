@@ -12,6 +12,7 @@
 enum SystemState {
   STATE_INIT,
   STATE_LOGO_DISPLAY,    // Show startup logo for 4 seconds
+  STATE_STARTUP_MESSAGE, // Show startup message before WiFi scan
   STATE_WIFI_SCAN,
   STATE_WIFI_DISPLAY,
   STATE_WIFI_CONNECT,    // Future expansion
@@ -50,6 +51,7 @@ public:
   // State-specific handlers
   void handleInitState();
   void handleLogoDisplayState();
+  void handleStartupMessageState();
   void handleWiFiScanState();
   void handleWiFiDisplayState();
   void handleWiFiConnectState();
