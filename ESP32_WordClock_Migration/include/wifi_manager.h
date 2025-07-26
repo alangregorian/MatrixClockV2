@@ -25,8 +25,12 @@ const char* getEncryptionType(wifi_auth_mode_t encryptionType);
 
 // Network navigation functions
 void nextNetwork();
-void previousNetwork();
+void selectCurrentNetwork();
 int getNetworkCount();
 bool hasNetworks();
+
+// Network connection functions
+bool connectToNetwork(String ssid, String password);
+String getSelectedSSID();
 
 #endif // WIFI_MANAGER_H

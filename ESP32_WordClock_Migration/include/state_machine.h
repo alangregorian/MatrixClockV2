@@ -15,6 +15,7 @@ enum SystemState {
   STATE_STARTUP_MESSAGE, // Show startup message before WiFi scan
   STATE_WIFI_SCAN,
   STATE_WIFI_DISPLAY,
+  STATE_PASSWORD_ENTRY,  // Password entry for selected network
   STATE_WIFI_CONNECT,    // Future expansion
   STATE_TIME_SYNC,       // Future expansion  
   STATE_CLOCK_DISPLAY    // Future expansion
@@ -27,6 +28,13 @@ private:
   SystemState previousState;
   bool displayNeedsUpdate;
   bool stateChanged;
+  
+  // Password entry variables
+  String currentPassword;
+  int passwordPosition;
+  int currentCharIndex;
+  static const char characterSet[];
+  static const int characterSetSize;
   
   // Hardware references
   Adafruit_ST7789& tft;
@@ -54,6 +62,7 @@ public:
   void handleStartupMessageState();
   void handleWiFiScanState();
   void handleWiFiDisplayState();
+  void handlePasswordEntryState();
   void handleWiFiConnectState();
   void handleTimeSyncState();
   void handleClockDisplayState();

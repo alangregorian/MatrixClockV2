@@ -21,27 +21,26 @@ void initializeDisplay(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
   tft.setRotation(3); // Landscape mode (240x135)
   
   Serial.println("Clearing TFT screen...");
-  tft.fillScreen(ST77XX_BLACK);
+  clearTFTScreen(tft);
   
   // Test display with a simple pattern
   Serial.println("Testing TFT display...");
   tft.fillRect(0, 0, 240, 10, ST77XX_RED);    // Red bar at top
   tft.fillRect(0, 125, 240, 10, ST77XX_BLUE); // Blue bar at bottom
   delay(1000);
-  tft.fillScreen(ST77XX_BLACK);
+  clearTFTScreen(tft);
   
   // Initialize NeoMatrix
   matrix.begin();
   matrix.setBrightness(20);
-  matrix.fillScreen(0);
-  matrix.show();
+  clearNeoMatrix(matrix);
   
   Serial.println("Display initialization complete");
 }
 
 void displayStartupMessage(Adafruit_ST7789& tft) {
   // Clear screen first to remove clock logo
-  tft.fillScreen(ST77XX_BLACK);
+  clearTFTScreen(tft);
   
   // Display startup message
   tft.setTextColor(ST77XX_WHITE);
@@ -61,7 +60,7 @@ void displayStartupMessage(Adafruit_ST7789& tft) {
 
 void displayClockLogo(Adafruit_ST7789& tft) {
   // Clear screen
-  tft.fillScreen(ST77XX_BLACK);
+  clearTFTScreen(tft);
   
   // Display title
   tft.setTextColor(ST77XX_WHITE);
@@ -138,7 +137,7 @@ void drawSignalBars(Adafruit_ST7789& tft, int32_t rssi, int x, int y) {
 
 void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, const WiFiNetworkInfo& networkInfo) {
   // Clear screen first to remove previous content
-  tft.fillScreen(ST77XX_BLACK);
+  clearTFTScreen(tft);
   
   // Display header
   tft.setTextColor(ST77XX_WHITE);
@@ -218,7 +217,7 @@ void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, con
   tft.setTextColor(ST77XX_CYAN);
   tft.setTextSize(1);
   tft.setCursor(10, 100);
-  tft.println("A: Next  B: Prev  C: Rescan");
+  tft.println("A: Next  B: Select  C: Rescan");
   
   // Display network count info
   tft.setCursor(10, 115);
@@ -229,6 +228,74 @@ void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, con
   tft.println(getNetworkCount());
   
   // Clear NeoMatrix (optional - could show signal strength pattern)
+  clearNeoMatrix(matrix);
+}
+
+// Display clearing functions
+void clearTFTScreen(Adafruit_ST7789& tft, uint16_t color) {
+  tft.fillScreen(color);
+}
+
+void clearNeoMatrix(Adafruit_NeoMatrix& matrix) {
   matrix.fillScreen(0);
   matrix.show();
+}
+
+void displayPasswordEntry(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, const String& ssid, const String& maskedPassword, char currentChar) {
+  // Clear screen first
+  clearTFTScreen(tft);
+  
+  // Display header
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(10, 10);
+  tft.println("Enter Password");
+  
+  // Draw separator line
+  tft.drawLine(10, 35, 230, 35, ST77XX_BLUE);
+  
+  // Display selected network SSID
+  tft.setTextSize(1);
+  tft.setCursor(10, 45);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("Network: ");
+  tft.setTextColor(ST77XX_WHITE);
+  
+  // Truncate SSID if too long
+  String displaySSID = ssid;
+  if (displaySSID.length() > 20) {
+    displaySSID = displaySSID.substring(0, 17) + "...";
+  }
+  tft.println(displaySSID);
+  
+  // Display current password (masked)
+  tft.setCursor(10, 60);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("Password: ");
+  tft.setTextColor(ST77XX_WHITE);
+  tft.print(maskedPassword);
+  
+  // Display current character being selected
+  tft.setCursor(10, 75);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("Current: ");
+  tft.setTextColor(ST77XX_GREEN);
+  tft.setTextSize(2);
+  tft.print(currentChar);
+  
+  // Display instructions
+  tft.setTextColor(ST77XX_CYAN);
+  tft.setTextSize(1);
+  tft.setCursor(10, 100);
+  tft.println("A: Cycle Char");
+  tft.setCursor(10, 115);
+  tft.println("B: Confirm Char  C: Submit");
+  
+  // Clear NeoMatrix
+  clearNeoMatrix(matrix);
+}
+
+void clearAllDisplays(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
+  clearTFTScreen(tft);
+  clearNeoMatrix(matrix);
 }

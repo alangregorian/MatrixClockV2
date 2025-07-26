@@ -6,6 +6,9 @@ int currentNetwork = 0;
 unsigned long lastScan = 0;
 const unsigned long SCAN_INTERVAL = 10000; // Scan every 10 seconds
 
+// Selected network variables
+String selectedSSID = "";
+
 void scanWiFiNetworks() {
   Serial.println("Scanning for WiFi networks...");
   
@@ -88,11 +91,40 @@ void nextNetwork() {
   }
 }
 
-void previousNetwork() {
-  if (networkCount > 0) {
-    currentNetwork = (currentNetwork - 1 + networkCount) % networkCount;
-    Serial.printf("Previous network: %d (%s)\n", currentNetwork + 1, WiFi.SSID(currentNetwork).c_str());
+void selectCurrentNetwork() {
+  if (networkCount > 0 && currentNetwork >= 0 && currentNetwork < networkCount) {
+    selectedSSID = WiFi.SSID(currentNetwork);
+    Serial.printf("Selected network: %s\n", selectedSSID.c_str());
   }
+}
+
+bool connectToNetwork(String ssid, String password) {
+  Serial.printf("Attempting to connect to: %s\n", ssid.c_str());
+  
+  // Begin WiFi connection
+  WiFi.begin(ssid.c_str(), password.c_str());
+  
+  // Wait for connection with timeout
+  unsigned long startTime = millis();
+  const unsigned long timeout = 10000; // 10 second timeout
+  
+  while (WiFi.status() != WL_CONNECTED && millis() - startTime < timeout) {
+    delay(500);
+    Serial.print(".");
+  }
+  
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nWiFi connected successfully!");
+    Serial.printf("IP address: %s\n", WiFi.localIP().toString().c_str());
+    return true;
+  } else {
+    Serial.println("\nWiFi connection failed!");
+    return false;
+  }
+}
+
+String getSelectedSSID() {
+  return selectedSSID;
 }
 
 int getNetworkCount() {

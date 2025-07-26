@@ -1,9 +1,13 @@
 #include "../include/state_machine.h"
 
+// Character set for password entry
+const char StateMachine::characterSet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>? ";
+const int StateMachine::characterSetSize = sizeof(StateMachine::characterSet) - 1; // -1 to exclude null terminator
+
 // Constructor
 StateMachine::StateMachine(Adafruit_ST7789& tftDisplay, Adafruit_NeoMatrix& neoMatrix)
   : tft(tftDisplay), matrix(neoMatrix), currentState(STATE_INIT), previousState(STATE_INIT), 
-    displayNeedsUpdate(true), stateChanged(false) {
+    displayNeedsUpdate(true), stateChanged(false), currentPassword(""), passwordPosition(0), currentCharIndex(0) {
 }
 
 // State management methods
@@ -62,6 +66,10 @@ void StateMachine::update() {
       
     case STATE_WIFI_DISPLAY:
       handleWiFiDisplayState();
+      break;
+      
+    case STATE_PASSWORD_ENTRY:
+      handlePasswordEntryState();
       break;
       
     case STATE_WIFI_CONNECT:
@@ -163,8 +171,28 @@ void StateMachine::handleWiFiDisplayState() {
         displayNeedsUpdate = true;  // Network changed, need to update display
         break;
       case BUTTON_B_PRESSED:
-        previousNetwork();
-        displayNeedsUpdate = true;  // Network changed, need to update display
+        {
+          selectCurrentNetwork();
+          // Check if network is open (no password required)
+          WiFiNetworkInfo networkInfo = getCurrentNetworkInfo();
+          if (networkInfo.encryption == WIFI_AUTH_OPEN) {
+            // Open network - connect directly
+            Serial.println("Open network detected - connecting directly");
+            if (connectToNetwork(getSelectedSSID(), "")) {
+              Serial.println("WiFi connection successful!");
+              changeState(STATE_TIME_SYNC);
+            } else {
+              Serial.println("WiFi connection failed! Returning to network selection.");
+              changeState(STATE_WIFI_DISPLAY);
+            }
+          } else {
+            // Secured network - go to password entry
+            currentPassword = "";
+            passwordPosition = 0;
+            currentCharIndex = 0;
+            changeState(STATE_PASSWORD_ENTRY);
+          }
+        }
         break;
       case BUTTON_C_PRESSED:
         changeState(STATE_WIFI_SCAN);  // Rescan
@@ -186,6 +214,54 @@ void StateMachine::handleTimeSyncState() {
   // Future: NTP time synchronization
   Serial.println("Time Sync state - Not implemented yet");
   changeState(STATE_CLOCK_DISPLAY);
+}
+
+void StateMachine::handlePasswordEntryState() {
+  // Handle button inputs
+  ButtonEvent buttonEvent = handleButtons();
+  
+  // Display password entry screen when needed
+  if (displayNeedsUpdate || stateChanged) {
+    displayPasswordEntry(tft, matrix, getSelectedSSID(), currentPassword, characterSet[currentCharIndex]);
+    
+    displayNeedsUpdate = false;
+    stateChanged = false;
+  }
+  
+  // Handle button events
+  switch (buttonEvent) {
+    case BUTTON_A_PRESSED:
+      // Cycle through characters
+      currentCharIndex = (currentCharIndex + 1) % characterSetSize;
+      displayNeedsUpdate = true;
+      Serial.printf("Character changed to: %c\n", characterSet[currentCharIndex]);
+      break;
+      
+    case BUTTON_B_PRESSED:
+      // Confirm current character and add to password
+      currentPassword += characterSet[currentCharIndex];
+      passwordPosition++;
+      currentCharIndex = 0; // Reset to 'a' for next character
+      displayNeedsUpdate = true;
+      Serial.printf("Character confirmed. Password length: %d\n", currentPassword.length());
+      break;
+      
+    case BUTTON_C_PRESSED:
+      // Submit password and attempt connection
+      Serial.printf("Submitting password for %s\n", getSelectedSSID().c_str());
+      if (connectToNetwork(getSelectedSSID(), currentPassword)) {
+        Serial.println("WiFi connection successful!");
+        changeState(STATE_TIME_SYNC);
+      } else {
+        Serial.println("WiFi connection failed! Returning to network selection.");
+        changeState(STATE_WIFI_DISPLAY);
+      }
+      break;
+      
+    case NO_BUTTON:
+      // Stay in password entry state
+      break;
+  }
 }
 
 void StateMachine::handleClockDisplayState() {
