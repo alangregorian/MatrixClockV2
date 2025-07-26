@@ -11,6 +11,7 @@
 // System State Machine
 enum SystemState {
   STATE_INIT,
+  STATE_LOGO_DISPLAY,    // Show startup logo for 4 seconds
   STATE_WIFI_SCAN,
   STATE_WIFI_DISPLAY,
   STATE_WIFI_CONNECT,    // Future expansion
@@ -48,6 +49,7 @@ public:
   
   // State-specific handlers
   void handleInitState();
+  void handleLogoDisplayState();
   void handleWiFiScanState();
   void handleWiFiDisplayState();
   void handleWiFiConnectState();

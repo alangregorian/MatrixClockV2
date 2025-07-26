@@ -18,20 +18,27 @@ ESP32_WordClock_Migration/
 ├── src/                        # Source files
 │   ├── wifi_manager.cpp        # WiFi scanning and connection management
 │   ├── display_manager.cpp     # TFT and NeoMatrix display handling
-│   └── button_handler.cpp      # Button input management
+│   ├── button_handler.cpp      # Button input management
+│   ├── state_machine.cpp       # State machine implementation
+│   └── version.cpp              # Version information and changelog
 ├── include/                    # Header files
 │   ├── wifi_manager.h
 │   ├── display_manager.h
-│   └── button_handler.h
+│   ├── button_handler.h
+│   ├── state_machine.h
+│   └── version.h                # Version tracking and build info
 ├── compile.sh                  # Compile script
 ├── build.sh                    # Full build process with dependency checks
 ├── upload.sh                   # Upload to ESP32-S2
+├── CHANGELOG.md                # Version history and feature tracking
 └── README.md                   # This file
 ```
 
 ## Features
 
 ### Current Implementation
+- **Startup Logo Display**: Shows WordClock logo with version number for 4 seconds
+- **Version Tracking**: Displays current version (0.0.1) and build date
 - **WiFi Scanner**: Scans and displays available WiFi networks
 - **TFT Display**: Shows network information with signal strength
 - **NeoMatrix Visualization**: Signal strength indicator
@@ -39,7 +46,8 @@ ESP32_WordClock_Migration/
   - D0: Next network
   - D1: Previous network  
   - D2: Rescan networks
-- **State Machine**: Organized program flow for easy expansion
+- **State Machine**: Organized program flow with logo display state
+- **Modular Architecture**: Clean separation of concerns with proper C++ structure
 
 ### Future Expansion (Ready for Implementation)
 - WiFi connection to selected network
@@ -101,11 +109,17 @@ arduino-cli board list
 The project uses a clean state machine architecture:
 
 - `STATE_INIT`: Hardware initialization
+- `STATE_LOGO_DISPLAY`: Shows startup logo with version for 4 seconds
 - `STATE_WIFI_SCAN`: WiFi network scanning
 - `STATE_WIFI_DISPLAY`: Display networks and handle navigation
 - `STATE_WIFI_CONNECT`: Connect to selected network (future)
 - `STATE_TIME_SYNC`: NTP time synchronization (future)
 - `STATE_CLOCK_DISPLAY`: WordClock display mode (future)
+
+### Startup Sequence
+1. **Hardware Init** → **Logo Display** (4 seconds) → **WiFi Scan** → **WiFi Display**
+2. The logo shows the WordClock name, version number, and build date
+3. After 4 seconds, automatically transitions to WiFi scanning
 
 ## Pin Configuration
 

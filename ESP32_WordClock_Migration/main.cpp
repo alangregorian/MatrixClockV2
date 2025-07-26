@@ -19,6 +19,7 @@
 #include <Adafruit_NeoPixel.h>
 
 // Include our modular headers
+#include "include/version.h"
 #include "include/wifi_manager.h"
 #include "include/display_manager.h"
 #include "include/button_handler.h"
@@ -51,6 +52,13 @@ void setup() {
   
   Serial.println("ESP32-S2 WordClock Migration - State Machine");
   Serial.println("============================================");
+  Serial.print("Version: ");
+  Serial.println(SOFTWARE_VERSION);
+  Serial.print("Build: ");
+  Serial.print(BUILD_DATE);
+  Serial.print(" ");
+  Serial.println(BUILD_TIME);
+  Serial.println("Features: Logo display, WiFi scan, State machine");
   Serial.println("DEBUG: Setup started");
   Serial.flush();
   
@@ -82,23 +90,9 @@ void setup() {
   Serial.println("DEBUG: WiFi initialization complete");
   Serial.flush();
   
-  // Show startup message
-  Serial.println("DEBUG: About to display startup message");
-  Serial.flush();
-  displayStartupMessage(tft);
-  Serial.println("DEBUG: Startup message displayed");
-  Serial.flush();
-  
-  // Initialize NeoMatrix startup pattern
-  Serial.println("DEBUG: About to show startup pattern");
-  Serial.flush();
-  // TEMPORARILY DISABLED - NeoMatrix causing reset
-  // showStartupPattern(matrix);
-  Serial.println("DEBUG: NeoMatrix startup pattern skipped (disabled)");
-  Serial.flush();
-  
-  delay(2000);
+  // State machine will handle logo display automatically
   Serial.println("DEBUG: Setup complete - entering main loop");
+  Serial.println("DEBUG: Logo will be displayed by state machine for 4 seconds");
   Serial.flush();
 }
 

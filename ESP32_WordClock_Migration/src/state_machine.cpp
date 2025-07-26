@@ -48,6 +48,10 @@ void StateMachine::update() {
       handleInitState();
       break;
       
+    case STATE_LOGO_DISPLAY:
+      handleLogoDisplayState();
+      break;
+      
     case STATE_WIFI_SCAN:
       handleWiFiScanState();
       break;
@@ -72,8 +76,31 @@ void StateMachine::update() {
 
 // State-specific handlers
 void StateMachine::handleInitState() {
-  // Initialization complete, move to WiFi scan
-  changeState(STATE_WIFI_SCAN);
+  // Initialization complete, move to logo display
+  changeState(STATE_LOGO_DISPLAY);
+}
+
+void StateMachine::handleLogoDisplayState() {
+  // Display logo only once when entering this state
+  if (stateChanged || displayNeedsUpdate) {
+    displayClockLogo(tft);
+    stateChanged = false;
+    displayNeedsUpdate = false;
+  }
+  
+  // Use static variable to track timing for this state
+  static unsigned long logoStartTime = 0;
+  
+  // Initialize timer on first entry
+  if (logoStartTime == 0) {
+    logoStartTime = millis();
+  }
+  
+  // Check if 4 seconds have elapsed
+  if (millis() - logoStartTime >= 4000) {
+    logoStartTime = 0; // Reset for next time
+    changeState(STATE_WIFI_SCAN);
+  }
 }
 
 void StateMachine::handleWiFiScanState() {

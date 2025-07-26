@@ -1,4 +1,5 @@
 #include "../include/display_manager.h"
+#include "../include/version.h"
 #include <SPI.h>
 
 // TFT Display pins are predefined by ESP32-S2 Reverse TFT Feather board variant
@@ -53,6 +54,60 @@ void displayStartupMessage(Adafruit_ST7789& tft) {
   
   tft.setCursor(10, 85);
   tft.println("Ready! Scanning...");
+}
+
+void displayClockLogo(Adafruit_ST7789& tft) {
+  // Clear screen
+  tft.fillScreen(ST77XX_BLACK);
+  
+  // Display title
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(30, 15);
+  tft.println("ESP32 WordClock");
+  
+  // Draw clock face (centered at 120, 67)
+  int centerX = 120;
+  int centerY = 67;
+  int radius = 30;
+  
+  // Draw outer circle
+  tft.drawCircle(centerX, centerY, radius, ST77XX_WHITE);
+  tft.drawCircle(centerX, centerY, radius-1, ST77XX_WHITE);
+  
+  // Draw hour markers (12, 3, 6, 9)
+  for (int i = 0; i < 4; i++) {
+    float angle = i * PI / 2 - PI / 2; // Start at 12 o'clock
+    int x1 = centerX + (radius - 5) * cos(angle);
+    int y1 = centerY + (radius - 5) * sin(angle);
+    int x2 = centerX + (radius - 2) * cos(angle);
+    int y2 = centerY + (radius - 2) * sin(angle);
+    tft.drawLine(x1, y1, x2, y2, ST77XX_WHITE);
+  }
+  
+  // Draw clock hands pointing to 12:00
+  // Hour hand (shorter, thicker)
+  tft.drawLine(centerX, centerY, centerX, centerY - 15, ST77XX_WHITE);
+  tft.drawLine(centerX-1, centerY, centerX-1, centerY - 15, ST77XX_WHITE);
+  tft.drawLine(centerX+1, centerY, centerX+1, centerY - 15, ST77XX_WHITE);
+  
+  // Minute hand (longer, thinner)
+  tft.drawLine(centerX, centerY, centerX, centerY - 25, ST77XX_WHITE);
+  
+  // Center dot
+  tft.fillCircle(centerX, centerY, 2, ST77XX_WHITE);
+  
+  // Display version information
+  tft.setTextSize(1);
+  tft.setCursor(75, 110);
+  tft.print("Version ");
+  tft.println(SOFTWARE_VERSION);
+  
+  // Display build date (smaller text)
+  tft.setTextSize(1);
+  tft.setCursor(60, 125);
+  tft.print("Build: ");
+  tft.println(BUILD_DATE);
 }
 
 void showStartupPattern(Adafruit_NeoMatrix& matrix) {
