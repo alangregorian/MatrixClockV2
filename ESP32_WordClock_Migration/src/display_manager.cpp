@@ -321,6 +321,57 @@ void displayPasswordEntry(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, cons
   // clearNeoMatrix(matrix);
 }
 
+void displayConnectingMessage(Adafruit_ST7789& tft, const String& ssid) {
+  // Clear screen first
+  clearTFTScreen(tft);
+  
+  // Display header
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(10, 10);
+  tft.println("WiFi Connection");
+  
+  // Draw separator line
+  tft.drawLine(10, 35, 230, 35, ST77XX_BLUE);
+  
+  // Display connecting message
+  tft.setTextSize(2);
+  tft.setCursor(10, 50);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.println("Connecting...");
+  
+  // Display network name
+  tft.setTextSize(1);
+  tft.setCursor(10, 80);
+  tft.setTextColor(ST77XX_CYAN);
+  tft.print("Network: ");
+  tft.setTextColor(ST77XX_WHITE);
+  
+  // Safely truncate SSID if too long
+  char displaySSID[26]; // Fixed size buffer to prevent heap issues
+  if (ssid.length() > 25) {
+    strncpy(displaySSID, ssid.c_str(), 22);
+    displaySSID[22] = '.';
+    displaySSID[23] = '.';
+    displaySSID[24] = '.';
+    displaySSID[25] = '\0';
+  } else {
+    strncpy(displaySSID, ssid.c_str(), 25);
+    displaySSID[25] = '\0';
+  }
+  tft.println(displaySSID);
+  
+  // Display status message
+  tft.setCursor(10, 100);
+  tft.setTextColor(ST77XX_GREEN);
+  tft.println("Please wait...");
+  
+  // Display timeout info
+  tft.setCursor(10, 115);
+  tft.setTextColor(0x7BEF); // Light gray color
+  tft.println("Timeout: 10 seconds");
+}
+
 void clearAllDisplays(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
   clearTFTScreen(tft);
   clearNeoMatrix(matrix);

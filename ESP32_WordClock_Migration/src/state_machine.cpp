@@ -73,6 +73,10 @@ void StateMachine::update() {
       handlePasswordEntryState();
       break;
       
+    case STATE_WIFI_CONNECTING:
+      handleWiFiConnectingState();
+      break;
+      
     case STATE_WIFI_CONNECT:
       handleWiFiConnectState();
       break;
@@ -196,15 +200,10 @@ void StateMachine::handleWiFiDisplayState() {
           // Check if network is open (no password required)
           WiFiNetworkInfo networkInfo = getCurrentNetworkInfo();
           if (networkInfo.encryption == WIFI_AUTH_OPEN) {
-            // Open network - connect directly
+            // Open network - set empty password and go to connecting state
             Serial.println("Open network detected - connecting directly");
-            if (connectToNetwork(getSelectedSSID(), "")) {
-              Serial.println("WiFi connection successful!");
-              changeState(STATE_TIME_SYNC);
-            } else {
-              Serial.println("WiFi connection failed! Returning to network selection.");
-              changeState(STATE_WIFI_DISPLAY);
-            }
+            currentPassword = "";
+            changeState(STATE_WIFI_CONNECTING);
           } else {
             // Secured network - go to password entry
             currentPassword = "";
@@ -270,20 +269,36 @@ void StateMachine::handlePasswordEntryState() {
       break;
       
     case BUTTON_C_PRESSED:
-      // Submit password and attempt connection
+      // Submit password and transition to connecting state
       Serial.printf("Submitting password for %s\n", getSelectedSSID().c_str());
-      if (connectToNetwork(getSelectedSSID(), currentPassword)) {
-        Serial.println("WiFi connection successful!");
-        changeState(STATE_TIME_SYNC);
-      } else {
-        Serial.println("WiFi connection failed! Returning to network selection.");
-        changeState(STATE_WIFI_DISPLAY);
-      }
+      changeState(STATE_WIFI_CONNECTING);
       break;
       
     case NO_BUTTON:
       // Stay in password entry state
       break;
+  }
+}
+
+void StateMachine::handleWiFiConnectingState() {
+  Serial.printf("[STATE_WIFI_CONNECTING] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
+  // Display connecting message when entering this state
+  if (stateChanged || displayNeedsUpdate) {
+    displayConnectingMessage(tft, getSelectedSSID());
+    stateChanged = false;
+    displayNeedsUpdate = false;
+  }
+  
+  // Attempt WiFi connection
+  Serial.printf("Attempting to connect to: %s\n", getSelectedSSID().c_str());
+  if (connectToNetwork(getSelectedSSID(), currentPassword)) {
+    Serial.println("WiFi connection successful!");
+    changeState(STATE_TIME_SYNC);
+  } else {
+    Serial.println("WiFi connection failed! Returning to network selection.");
+    changeState(STATE_WIFI_DISPLAY);
   }
 }
 
