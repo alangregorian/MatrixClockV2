@@ -89,6 +89,10 @@ void StateMachine::update() {
       handleWiFiConnectState();
       break;
       
+    case STATE_SETTINGS:
+      handleSettingsState();
+      break;
+      
     case STATE_TIME_SYNC:
       handleTimeSyncState();
       break;
@@ -373,8 +377,20 @@ void StateMachine::handleWiFiSuccessState() {
   // Handle button inputs - any button continues to next state
   ButtonEvent buttonEvent = handleButtons();
   if (buttonEvent != NO_BUTTON) {
-    Serial.println("Button pressed - continuing to time sync");
-    changeState(STATE_TIME_SYNC);
+    Serial.println("Button pressed - continuing to settings");
+    // Initialize settings manager if this is first time setup
+    if (!settingsManager.initialize()) {
+      Serial.println("Failed to initialize settings manager, using defaults");
+    }
+    
+    // Check if this is first time setup
+    if (settingsManager.isFirstTimeSetup()) {
+      Serial.println("First time setup - going to settings");
+      changeState(STATE_SETTINGS);
+    } else {
+      Serial.println("Settings already configured - going to time sync");
+      changeState(STATE_TIME_SYNC);
+    }
   }
 }
 
@@ -419,6 +435,114 @@ void StateMachine::handleWiFiFailureState() {
   }
 }
 
+void StateMachine::handleSettingsState() {
+  Serial.printf("[STATE_SETTINGS] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
+  // Settings menu variables (static to persist across calls)
+  static int currentSettingIndex = 0;
+  static const int numSettings = 3; // Timezone, DST Rules, Brightness
+  
+  // Handle button inputs
+  ButtonEvent buttonEvent = handleButtons();
+  
+  // Display settings menu when needed
+  if (displayNeedsUpdate || stateChanged) {
+    // Get current settings
+    ClockSettings settings = settingsManager.getSettings();
+    
+    // Create settings display strings
+    String timezoneStr = "Timezone: " + settingsManager.getCurrentTimezoneDisplayName();
+    String dstStr = "DST: " + settingsManager.getDSTRulesDisplayName(settings.dstRules);
+    String brightnessStr = "Brightness: " + String(settings.brightness) + "%";
+    String saveStr = "Save & Exit";
+    
+    // Display settings menu (this function needs to be added to display_manager)
+    displaySettingsMenu(tft, currentSettingIndex, timezoneStr, dstStr, brightnessStr, saveStr);
+    
+    displayNeedsUpdate = false;
+    stateChanged = false;
+  }
+  
+  // Handle button events
+  switch (buttonEvent) {
+    case BUTTON_A_PRESSED:
+      // Navigate to next setting
+      currentSettingIndex = (currentSettingIndex + 1) % (numSettings + 1); // +1 for Save & Exit
+      displayNeedsUpdate = true;
+      Serial.printf("Settings navigation: index %d\n", currentSettingIndex);
+      break;
+      
+    case BUTTON_B_PRESSED:
+      // Modify current setting
+      switch (currentSettingIndex) {
+        case 0: // Timezone
+          {
+            int currentOffset = settingsManager.getTimezoneOffset();
+            int nextOffset = settingsManager.getNextTimezoneOffset(currentOffset);
+            settingsManager.setTimezoneOffset(nextOffset);
+            Serial.printf("Timezone changed to: %s\n", settingsManager.getCurrentTimezoneDisplayName().c_str());
+          }
+          break;
+          
+        case 1: // DST Rules
+          {
+            DSTRules currentRules = settingsManager.getDSTRules();
+            DSTRules nextRules = settingsManager.getNextDSTRules(currentRules);
+            settingsManager.setDSTRules(nextRules);
+            Serial.printf("DST rules changed to: %s\n", settingsManager.getDSTRulesDisplayName(nextRules).c_str());
+          }
+          break;
+          
+        case 2: // Brightness
+          {
+            int currentBrightness = settingsManager.getBrightness();
+            int newBrightness = (currentBrightness + 25) % 125; // 0, 25, 50, 75, 100
+            if (newBrightness == 0) newBrightness = 25; // Skip 0, start at 25
+            settingsManager.setBrightness(newBrightness);
+            Serial.printf("Brightness changed to: %d%%\n", newBrightness);
+          }
+          break;
+          
+        case 3: // Save & Exit
+          // Save settings and exit
+          Serial.println("Saving settings and exiting...");
+          settingsManager.setFirstTimeSetup(false); // Mark setup as complete
+          if (settingsManager.saveSettings()) {
+            Serial.println("Settings saved successfully");
+            changeState(STATE_TIME_SYNC);
+          } else {
+            Serial.println("Failed to save settings");
+            // Still continue to time sync
+            changeState(STATE_TIME_SYNC);
+          }
+          break;
+      }
+      displayNeedsUpdate = true;
+      break;
+      
+    case BUTTON_C_PRESSED:
+      // Cancel/Exit without saving (if coming from clock display)
+      if (previousState == STATE_CLOCK_DISPLAY) {
+        Serial.println("Canceling settings changes - returning to clock");
+        // Reload settings to discard changes
+        settingsManager.loadSettings();
+        changeState(STATE_CLOCK_DISPLAY);
+      } else {
+        // If coming from first-time setup, force save and continue
+        Serial.println("First-time setup - saving and continuing");
+        settingsManager.setFirstTimeSetup(false);
+        settingsManager.saveSettings();
+        changeState(STATE_TIME_SYNC);
+      }
+      break;
+      
+    case NO_BUTTON:
+      // Stay in settings state
+      break;
+  }
+}
+
 void StateMachine::handleClockDisplayState() {
   Serial.printf("[STATE_CLOCK_DISPLAY] Free Heap: %d, Min Free: %d\n", 
                 ESP.getFreeHeap(), ESP.getMinFreeHeap());
@@ -448,8 +572,9 @@ void StateMachine::handleClockDisplayState() {
   ButtonEvent buttonEvent = handleButtons();
   switch (buttonEvent) {
     case BUTTON_A_PRESSED:
-      // Future: Settings menu
-      Serial.println("Settings button pressed - not implemented yet");
+      // Go to settings menu
+      Serial.println("Settings button pressed - going to settings");
+      changeState(STATE_SETTINGS);
       break;
       
     case BUTTON_B_PRESSED:

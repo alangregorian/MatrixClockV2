@@ -23,6 +23,9 @@ void displayTimeSyncStatus(Adafruit_ST7789& tft, const String& status);
 void displayCurrentTime(Adafruit_ST7789& tft, const String& timeString, const String& dateString);
 void displayClockScreen(Adafruit_ST7789& tft, const String& timeString, const String& dateString, const String& status);
 
+// Settings display functions
+void displaySettingsMenu(Adafruit_ST7789& tft, int selectedIndex, const String& timezone, const String& dst, const String& brightness, const String& save);
+
 // Display clearing functions
 void clearTFTScreen(Adafruit_ST7789& tft, uint16_t color = ST77XX_BLACK);
 void clearNeoMatrix(Adafruit_NeoMatrix& matrix);

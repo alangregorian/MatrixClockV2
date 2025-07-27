@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
+#include "settings_manager.h"
 
 // Forward declaration for NTPClient
 class NTPClient;
@@ -29,8 +30,9 @@ private:
   unsigned long syncInterval;
   TimeSyncStatus syncStatus;
   
-  // DST calculation for US Central Time
-  bool isDST(int month, int day, int year);
+  // DST calculation functions
+  bool isDST(int month, int day, int year);      // US DST rules
+  bool isDSTEU(int month, int day, int year);    // EU DST rules
   int calculateTimezoneOffset();
   
   // NTP communication

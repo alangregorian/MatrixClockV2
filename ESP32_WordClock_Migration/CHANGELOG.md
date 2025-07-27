@@ -1,5 +1,71 @@
 # WordClock Version History
 
+## Version 0.5.0 (Timezone & DST Management System)
+**Date**: July 27, 2025
+**Major Features Added**:
+- **NEW**: Complete timezone management system with 24 timezone options (UTC-12 to UTC+12)
+- **NEW**: Comprehensive DST (Daylight Saving Time) rules support with US and EU rules
+- **NEW**: Interactive settings menu with navigation and real-time configuration
+- **NEW**: Persistent settings storage using EEPROM with validation and corruption protection
+- **NEW**: First-time setup integration with automatic settings configuration flow
+- **NEW**: Settings state machine integration accessible from clock display
+
+**Settings Manager Features**:
+- **24 Timezone Support**: Full range from UTC-12 to UTC+12 with proper display names
+- **DST Rules Engine**: 
+  - US Rules: Second Sunday in March to First Sunday in November
+  - EU Rules: Last Sunday in March to Last Sunday in October  
+  - Disabled option for regions without DST
+- **Brightness Control**: Adjustable display brightness (25%, 50%, 75%, 100%)
+- **EEPROM Persistence**: Settings survive power cycles with data validation
+- **Smart Defaults**: Safe fallback values if stored data is corrupted
+- **First-time Detection**: Automatic setup flow for new installations
+
+**Interactive Settings Menu**:
+- **Visual Navigation**: Highlighted menu selection with clear current values
+- **Real-time Updates**: Settings changes immediately reflected in display
+- **User-friendly Interface**: Clear instructions and intuitive button controls
+- **Smart Flow Control**: Different behavior for first-time setup vs. settings access
+- **Cancel/Save Options**: Proper handling of settings changes with confirmation
+
+**Enhanced Time Manager Integration**:
+- **Dynamic Timezone Application**: Real-time timezone offset calculation
+- **Automatic DST Detection**: Mathematical algorithms determine current DST status
+- **UTC Time Storage**: Stores time in UTC, applies local adjustments for display
+- **Year-agnostic DST**: Works correctly for any year using day-of-week calculations
+- **Real-time Adjustment**: Time display automatically reflects timezone and DST changes
+
+**State Machine Enhancements**:
+- **New STATE_SETTINGS**: Complete settings menu state with navigation
+- **Smart State Flow**: 
+  - First boot: WiFi → Settings → Time Sync → Clock Display
+  - Subsequent boots: WiFi → Time Sync → Clock Display
+  - Settings access: Clock Display → Settings → Clock Display
+- **Button Integration**: Settings accessible via Button A from clock display
+- **Proper State Transitions**: Seamless flow between settings and normal operation
+
+**Display System Updates**:
+- **Settings Menu Display**: Visual menu with highlighted selection and current values
+- **Real-time Feedback**: Immediate visual updates when changing settings
+- **Consistent UI Design**: Matches existing display style and color scheme
+- **Safe String Handling**: Prevents memory issues with fixed-size buffers
+
+**Technical Improvements**:
+- **Modular Architecture**: Clean separation between settings, time, and display management
+- **Memory Efficient**: Minimal heap usage with stack-based operations
+- **Robust Error Handling**: Graceful handling of invalid settings and EEPROM corruption
+- **Thread-safe Operations**: Safe concurrent access to settings data
+- **Comprehensive Validation**: All settings values validated before storage
+
+**User Experience Enhancements**:
+- **Intuitive Navigation**: A=Navigate, B=Change, C=Cancel/Save
+- **Clear Visual Feedback**: Highlighted selections and immediate setting updates
+- **No More Hardcoded Timezone**: Users can configure their exact timezone and DST preferences
+- **Persistent Configuration**: Settings remembered across power cycles
+- **Smart Setup Flow**: Guided first-time configuration with sensible defaults
+
+**Answer to "Is timezone hardcoded?"**: **NO** - The timezone is now fully user-configurable with 24 timezone options, automatic DST calculation, and persistent storage. Users can select their exact timezone and DST rules through an interactive settings menu.
+
 ## Version 0.4.1 (Critical Time Sync Bug Fixes)
 **Date**: July 27, 2025
 **Critical Bug Fixes**:
@@ -287,7 +353,7 @@
 - Version management system with changelog tracking
 
 ## Future Planned Versions
-- **0.5.0**: WordClock display mode with LED matrix word illumination
-- **0.6.0**: Settings and configuration management
-- **0.7.0**: Advanced features (brightness control, color themes, etc.)
+- **0.6.0**: WordClock display mode with LED matrix word illumination
+- **0.7.0**: Advanced features (color themes, animations, etc.)
+- **0.8.0**: Web interface and remote configuration
 - **1.0.0**: Full feature release with complete WordClock functionality

@@ -8,6 +8,7 @@
 #include "display_manager.h"
 #include "button_handler.h"
 #include "time_manager.h"
+#include "settings_manager.h"
 
 // System State Machine
 enum SystemState {
@@ -21,8 +22,9 @@ enum SystemState {
   STATE_WIFI_SUCCESS,    // Show successful connection screen
   STATE_WIFI_FAILURE,    // Show connection failure screen with retry options
   STATE_WIFI_CONNECT,    // Future expansion
-  STATE_TIME_SYNC,       // Future expansion  
-  STATE_CLOCK_DISPLAY    // Future expansion
+  STATE_SETTINGS,        // Settings configuration (timezone, DST, brightness)
+  STATE_TIME_SYNC,       // Time synchronization
+  STATE_CLOCK_DISPLAY    // Main clock display
 };
 
 class StateMachine {
@@ -71,6 +73,7 @@ public:
   void handleWiFiSuccessState();
   void handleWiFiFailureState();
   void handleWiFiConnectState();
+  void handleSettingsState();
   void handleTimeSyncState();
   void handleClockDisplayState();
 };

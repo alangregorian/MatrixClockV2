@@ -674,6 +674,54 @@ void displayClockScreen(Adafruit_ST7789& tft, const String& timeString, const St
   tft.println("A: Settings  B: Sync  C: WiFi");
 }
 
+void displaySettingsMenu(Adafruit_ST7789& tft, int selectedIndex, const String& timezone, const String& dst, const String& brightness, const String& save) {
+  // Clear screen first
+  clearTFTScreen(tft);
+  
+  // Display header
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(10, 10);
+  tft.println("Settings");
+  
+  // Draw separator line
+  tft.drawLine(10, 35, 230, 35, ST77XX_BLUE);
+  
+  // Settings menu items
+  String menuItems[4] = {timezone, dst, brightness, save};
+  
+  // Display each menu item
+  for (int i = 0; i < 4; i++) {
+    tft.setCursor(10, 45 + (i * 15));
+    tft.setTextSize(1);
+    
+    // Highlight selected item
+    if (i == selectedIndex) {
+      tft.setTextColor(ST77XX_BLACK);
+      tft.fillRect(8, 43 + (i * 15), 224, 12, ST77XX_YELLOW);
+    } else {
+      tft.setTextColor(ST77XX_WHITE);
+    }
+    
+    // Safely display menu item
+    char displayItem[30]; // Fixed size buffer
+    if (menuItems[i].length() > 29) {
+      strncpy(displayItem, menuItems[i].c_str(), 29);
+      displayItem[29] = '\0';
+    } else {
+      strncpy(displayItem, menuItems[i].c_str(), 29);
+      displayItem[29] = '\0';
+    }
+    tft.println(displayItem);
+  }
+  
+  // Display instructions
+  tft.setTextColor(ST77XX_CYAN);
+  tft.setTextSize(1);
+  tft.setCursor(10, 115);
+  tft.println("A: Navigate  B: Change  C: Cancel");
+}
+
 void clearAllDisplays(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
   clearTFTScreen(tft);
   clearNeoMatrix(matrix);

@@ -18,7 +18,7 @@ TimeManager::TimeManager() {
   ntpUDP = nullptr;
   timeClient = nullptr;
   ntpServer = "pool.ntp.org";
-  timezoneOffset = -21600; // Default to CST (-6 hours)
+  timezoneOffset = 0; // Will be set from settings
   lastSyncTime = 0;
   lastSyncMillis = 0; // Track when the sync occurred in millis()
   syncInterval = 3600000; // 1 hour in milliseconds
@@ -173,6 +173,16 @@ unsigned long TimeManager::getLastSyncTime() {
 
 // Calculate current timezone offset including DST
 int TimeManager::calculateTimezoneOffset() {
+  // Get timezone offset from settings (in hours)
+  int baseOffsetHours = settingsManager.getTimezoneOffset();
+  int baseOffsetSeconds = baseOffsetHours * 3600;
+  
+  // Check if DST should be applied
+  DSTRules dstRules = settingsManager.getDSTRules();
+  if (dstRules == DST_DISABLED) {
+    return baseOffsetSeconds;
+  }
+  
   // Get current date for DST calculation
   time_t rawTime = lastSyncTime;
   struct tm* timeInfo = gmtime(&rawTime);
@@ -181,15 +191,23 @@ int TimeManager::calculateTimezoneOffset() {
   int day = timeInfo->tm_mday;
   int year = timeInfo->tm_year + 1900;
   
-  // US Central Time: CST (-6) or CDT (-5)
-  if (isDST(month, day, year)) {
-    return -18000; // CDT: -5 hours in seconds
+  // Apply DST rules
+  bool isDSTActive = false;
+  if (dstRules == DST_US) {
+    isDSTActive = isDST(month, day, year);
+  } else if (dstRules == DST_EU) {
+    isDSTActive = isDSTEU(month, day, year);
+  }
+  
+  // Add 1 hour (3600 seconds) if DST is active
+  if (isDSTActive) {
+    return baseOffsetSeconds + 3600;
   } else {
-    return -21600; // CST: -6 hours in seconds
+    return baseOffsetSeconds;
   }
 }
 
-// DST calculation for US Central Time
+// DST calculation for US rules
 bool TimeManager::isDST(int month, int day, int year) {
   if (month < 3 || month > 11) return false;
   if (month > 3 && month < 11) return true;
@@ -215,6 +233,36 @@ bool TimeManager::isDST(int month, int day, int year) {
     if (firstSunday > 7) firstSunday -= 7;
     
     return day < firstSunday;
+  }
+  
+  return false;
+}
+
+// DST calculation for EU rules
+bool TimeManager::isDSTEU(int month, int day, int year) {
+  if (month < 3 || month > 10) return false;
+  if (month > 3 && month < 10) return true;
+  
+  // Calculate the last Sunday in March (DST starts)
+  if (month == 3) {
+    // Find the last Sunday in March
+    int lastSunday = 31;
+    int dayOfWeek = (31 + 2*month + (3*(month+1))/5 + year + year/4 - year/100 + year/400) % 7;
+    lastSunday = 31 - dayOfWeek;
+    if (lastSunday > 31) lastSunday -= 7;
+    
+    return day >= lastSunday;
+  }
+  
+  // Calculate the last Sunday in October (DST ends)
+  if (month == 10) {
+    // Find the last Sunday in October
+    int lastSunday = 31;
+    int dayOfWeek = (31 + 2*month + (3*(month+1))/5 + year + year/4 - year/100 + year/400) % 7;
+    lastSunday = 31 - dayOfWeek;
+    if (lastSunday > 31) lastSunday -= 7;
+    
+    return day < lastSunday;
   }
   
   return false;
