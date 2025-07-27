@@ -1,5 +1,50 @@
 # WordClock Version History
 
+## Version 0.3.4 (WiFi Success & Failure Screens)
+**Date**: January 26, 2025
+**Features Added**:
+- **NEW**: Added WiFi connection success screen with detailed connection information
+- **NEW**: Added WiFi connection failure screen with retry options
+- Added new `STATE_WIFI_SUCCESS` and `STATE_WIFI_FAILURE` states to state machine
+- Implemented `displayWiFiSuccess()` function showing IP address, signal strength, and connection details
+- Implemented `displayWiFiFailure()` function with multiple recovery options
+- Enhanced user experience with clear success/failure feedback and actionable options
+
+**Success Screen Features**:
+- "WiFi Connected!" confirmation message with green styling
+- Network name display with safe string truncation
+- IP address obtained from connection
+- Signal strength display with visual signal bars
+- "Connection successful!" status message
+- "Press any button to continue" instruction for progression
+
+**Failure Screen Features**:
+- "Connection Failed" error message with red styling
+- Network name that failed to connect
+- Possible failure causes listed (wrong password, weak signal, network unavailable)
+- Three recovery options: "A: Retry", "B: New Pass", "C: Back"
+- Clear visual feedback with appropriate color coding
+
+**Enhanced State Flow**:
+- `STATE_WIFI_CONNECTING` → (success) → `STATE_WIFI_SUCCESS` → (button press) → `STATE_TIME_SYNC`
+- `STATE_WIFI_CONNECTING` → (failure) → `STATE_WIFI_FAILURE` → (user choice) → appropriate recovery state
+- Success screen: Any button press continues to time synchronization
+- Failure screen: A=Retry same password, B=Enter new password, C=Back to network selection
+
+**Technical Improvements**:
+- Added success and failure state handlers to state machine
+- Enhanced display manager with comprehensive success/failure display functions
+- Improved error recovery workflow with multiple user options
+- Better separation of connection results from connection logic
+- Safe string handling in all new display functions to prevent memory issues
+
+**User Experience Enhancements**:
+- Clear visual confirmation of successful connections with connection details
+- Comprehensive failure handling with multiple recovery paths
+- No more ambiguity about connection status
+- Users can easily retry, change passwords, or select different networks
+- Consistent visual design with appropriate color coding for success/failure states
+
 ## Version 0.2.4 (WiFi Connection UI Enhancement)
 **Date**: January 26, 2025
 **Features Added**:

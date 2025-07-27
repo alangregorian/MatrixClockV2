@@ -77,6 +77,14 @@ void StateMachine::update() {
       handleWiFiConnectingState();
       break;
       
+    case STATE_WIFI_SUCCESS:
+      handleWiFiSuccessState();
+      break;
+      
+    case STATE_WIFI_FAILURE:
+      handleWiFiFailureState();
+      break;
+      
     case STATE_WIFI_CONNECT:
       handleWiFiConnectState();
       break;
@@ -295,10 +303,74 @@ void StateMachine::handleWiFiConnectingState() {
   Serial.printf("Attempting to connect to: %s\n", getSelectedSSID().c_str());
   if (connectToNetwork(getSelectedSSID(), currentPassword)) {
     Serial.println("WiFi connection successful!");
-    changeState(STATE_TIME_SYNC);
+    changeState(STATE_WIFI_SUCCESS);
   } else {
-    Serial.println("WiFi connection failed! Returning to network selection.");
-    changeState(STATE_WIFI_DISPLAY);
+    Serial.println("WiFi connection failed!");
+    changeState(STATE_WIFI_FAILURE);
+  }
+}
+
+void StateMachine::handleWiFiSuccessState() {
+  Serial.printf("[STATE_WIFI_SUCCESS] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
+  // Display success message when entering this state
+  if (stateChanged || displayNeedsUpdate) {
+    // Get connection details
+    String ipAddress = WiFi.localIP().toString();
+    WiFiNetworkInfo networkInfo = getCurrentNetworkInfo();
+    
+    displayWiFiSuccess(tft, getSelectedSSID(), ipAddress, networkInfo.rssi);
+    stateChanged = false;
+    displayNeedsUpdate = false;
+  }
+  
+  // Handle button inputs - any button continues to next state
+  ButtonEvent buttonEvent = handleButtons();
+  if (buttonEvent != NO_BUTTON) {
+    Serial.println("Button pressed - continuing to time sync");
+    changeState(STATE_TIME_SYNC);
+  }
+}
+
+void StateMachine::handleWiFiFailureState() {
+  Serial.printf("[STATE_WIFI_FAILURE] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
+  // Display failure message when entering this state
+  if (stateChanged || displayNeedsUpdate) {
+    displayWiFiFailure(tft, getSelectedSSID());
+    stateChanged = false;
+    displayNeedsUpdate = false;
+  }
+  
+  // Handle button inputs for retry options
+  ButtonEvent buttonEvent = handleButtons();
+  switch (buttonEvent) {
+    case BUTTON_A_PRESSED:
+      // Retry with same password
+      Serial.println("Retrying connection with same password");
+      changeState(STATE_WIFI_CONNECTING);
+      break;
+      
+    case BUTTON_B_PRESSED:
+      // Enter new password
+      Serial.println("Entering new password");
+      currentPassword = "";
+      passwordPosition = 0;
+      currentCharIndex = 0;
+      changeState(STATE_PASSWORD_ENTRY);
+      break;
+      
+    case BUTTON_C_PRESSED:
+      // Go back to network selection
+      Serial.println("Going back to network selection");
+      changeState(STATE_WIFI_DISPLAY);
+      break;
+      
+    case NO_BUTTON:
+      // Stay in failure state
+      break;
   }
 }
 

@@ -372,6 +372,131 @@ void displayConnectingMessage(Adafruit_ST7789& tft, const String& ssid) {
   tft.println("Timeout: 10 seconds");
 }
 
+void displayWiFiSuccess(Adafruit_ST7789& tft, const String& ssid, const String& ipAddress, int32_t rssi) {
+  // Clear screen first
+  clearTFTScreen(tft);
+  
+  // Display header with success icon
+  tft.setTextColor(ST77XX_GREEN);
+  tft.setTextSize(2);
+  tft.setCursor(10, 10);
+  tft.println("WiFi Connected!");
+  
+  // Draw separator line
+  tft.drawLine(10, 35, 230, 35, ST77XX_GREEN);
+  
+  // Display network name
+  tft.setTextSize(1);
+  tft.setCursor(10, 45);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("Network: ");
+  tft.setTextColor(ST77XX_WHITE);
+  
+  // Safely truncate SSID if too long
+  char displaySSID[21]; // Fixed size buffer to prevent heap issues
+  if (ssid.length() > 20) {
+    strncpy(displaySSID, ssid.c_str(), 17);
+    displaySSID[17] = '.';
+    displaySSID[18] = '.';
+    displaySSID[19] = '.';
+    displaySSID[20] = '\0';
+  } else {
+    strncpy(displaySSID, ssid.c_str(), 20);
+    displaySSID[20] = '\0';
+  }
+  tft.println(displaySSID);
+  
+  // Display IP address
+  tft.setCursor(10, 60);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("IP Address: ");
+  tft.setTextColor(ST77XX_CYAN);
+  
+  // Safely handle IP address string
+  char displayIP[16]; // Max IP length is 15 chars + null terminator
+  if (ipAddress.length() > 15) {
+    strncpy(displayIP, ipAddress.c_str(), 15);
+    displayIP[15] = '\0';
+  } else {
+    strncpy(displayIP, ipAddress.c_str(), 15);
+    displayIP[15] = '\0';
+  }
+  tft.println(displayIP);
+  
+  // Display signal strength
+  tft.setCursor(10, 75);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("Signal: ");
+  tft.setTextColor(ST77XX_WHITE);
+  tft.print(rssi);
+  tft.print(" dBm");
+  
+  // Draw signal bars
+  drawSignalBars(tft, rssi, 150, 75);
+  
+  // Display success message
+  tft.setCursor(10, 95);
+  tft.setTextColor(ST77XX_GREEN);
+  tft.println("Connection successful!");
+  
+  // Display instruction
+  tft.setCursor(10, 115);
+  tft.setTextColor(0x7BEF); // Light gray color
+  tft.println("Press any button to continue");
+}
+
+void displayWiFiFailure(Adafruit_ST7789& tft, const String& ssid) {
+  // Clear screen first
+  clearTFTScreen(tft);
+  
+  // Display header with failure indication
+  tft.setTextColor(ST77XX_RED);
+  tft.setTextSize(2);
+  tft.setCursor(10, 10);
+  tft.println("Connection Failed");
+  
+  // Draw separator line
+  tft.drawLine(10, 35, 230, 35, ST77XX_RED);
+  
+  // Display network name that failed
+  tft.setTextSize(1);
+  tft.setCursor(10, 45);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("Network: ");
+  tft.setTextColor(ST77XX_WHITE);
+  
+  // Safely truncate SSID if too long
+  char displaySSID[21]; // Fixed size buffer to prevent heap issues
+  if (ssid.length() > 20) {
+    strncpy(displaySSID, ssid.c_str(), 17);
+    displaySSID[17] = '.';
+    displaySSID[18] = '.';
+    displaySSID[19] = '.';
+    displaySSID[20] = '\0';
+  } else {
+    strncpy(displaySSID, ssid.c_str(), 20);
+    displaySSID[20] = '\0';
+  }
+  tft.println(displaySSID);
+  
+  // Display possible reasons
+  tft.setCursor(10, 65);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.println("Possible causes:");
+  tft.setCursor(10, 80);
+  tft.setTextColor(0x7BEF); // Light gray color
+  tft.println("- Wrong password");
+  tft.setCursor(10, 90);
+  tft.println("- Weak signal");
+  tft.setCursor(10, 100);
+  tft.println("- Network unavailable");
+  
+  // Display retry options
+  tft.setCursor(10, 120);
+  tft.setTextColor(ST77XX_CYAN);
+  tft.println("A: Retry  B: New Pass  C: Back");
+}
+
 void clearAllDisplays(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
   clearTFTScreen(tft);
   clearNeoMatrix(matrix);
