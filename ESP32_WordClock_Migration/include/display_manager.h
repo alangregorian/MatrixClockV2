@@ -14,6 +14,7 @@ void showStartupPattern(Adafruit_NeoMatrix& matrix);
 void drawSignalBars(Adafruit_ST7789& tft, int32_t rssi, int x, int y);
 void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, const WiFiNetworkInfo& networkInfo);
 void displayPasswordEntry(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, const String& ssid, const String& maskedPassword, char currentChar);
+void displayWiFiConnectionFailed(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix);
 
 // Display clearing functions
 void clearTFTScreen(Adafruit_ST7789& tft, uint16_t color = ST77XX_BLACK);

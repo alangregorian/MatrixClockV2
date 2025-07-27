@@ -2,6 +2,16 @@
 
 // Version history and changelog definition
 const char* VERSION_CHANGELOG = 
+  "Version 0.1.4 - WiFi Connection Failure Handling\n"
+  "- Added STATE_WIFI_CONNECT_FAILED for connection failure handling\n"
+  "- Implemented displayWiFiConnectionFailed() with error screen\n"
+  "- Added 2-second failure display with automatic retry\n"
+  "- Connection failures now show troubleshooting tips\n"
+  "- Added red X pattern on NeoMatrix for visual error feedback\n"
+  "- Automatic return to WiFi scan after connection failure\n"
+  "- Updated both password entry and open network failure paths\n"
+  "- Improved user experience with clear error messaging\n"
+  "\n"
   "Version 0.1.3 - WiFi Password Entry System\n"
   "- Replaced 'prev' with 'select' functionality in WiFi results\n"
   "- Added complete character-by-character password entry system\n"

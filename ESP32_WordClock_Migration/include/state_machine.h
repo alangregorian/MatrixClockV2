@@ -17,6 +17,7 @@ enum SystemState {
   STATE_WIFI_DISPLAY,
   STATE_PASSWORD_ENTRY,  // Password entry for selected network
   STATE_WIFI_CONNECT,    // Future expansion
+  STATE_WIFI_CONNECT_FAILED, // Display connection failure for 2 seconds
   STATE_TIME_SYNC,       // Future expansion  
   STATE_CLOCK_DISPLAY    // Future expansion
 };
@@ -64,6 +65,7 @@ public:
   void handleWiFiDisplayState();
   void handlePasswordEntryState();
   void handleWiFiConnectState();
+  void handleWiFiConnectFailedState();
   void handleTimeSyncState();
   void handleClockDisplayState();
 };

@@ -308,6 +308,51 @@ void displayPasswordEntry(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, cons
   clearNeoMatrix(matrix);
 }
 
+void displayWiFiConnectionFailed(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
+  // Clear screen first
+  clearTFTScreen(tft);
+  
+  // Display header with error styling
+  tft.setTextColor(ST77XX_RED);
+  tft.setTextSize(2);
+  tft.setCursor(10, 10);
+  tft.println("Connection Failed");
+  
+  // Draw separator line in red
+  tft.drawLine(10, 35, 230, 35, ST77XX_RED);
+  
+  // Display error message
+  tft.setTextSize(1);
+  tft.setCursor(10, 50);
+  tft.setTextColor(ST77XX_WHITE);
+  tft.println("Unable to connect to WiFi");
+  tft.setCursor(10, 65);
+  tft.println("network. Please check:");
+  
+  // Display troubleshooting tips
+  tft.setCursor(10, 85);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.println("- Password is correct");
+  tft.setCursor(10, 100);
+  tft.println("- Network is in range");
+  tft.setCursor(10, 115);
+  tft.println("- Network is available");
+  
+  // Display auto-retry message
+  tft.setCursor(10, 130);
+  tft.setTextColor(ST77XX_CYAN);
+  tft.println("Returning to scan...");
+  
+  // Show error pattern on NeoMatrix (red X pattern)
+  clearNeoMatrix(matrix);
+  // Draw red X pattern
+  for(int i = 0; i < 8; i++) {
+    matrix.drawPixel(i, i, matrix.Color(50, 0, 0)); // Red diagonal
+    matrix.drawPixel(i, 7-i, matrix.Color(50, 0, 0)); // Red anti-diagonal
+  }
+  matrix.show();
+}
+
 void clearAllDisplays(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
   clearTFTScreen(tft);
   clearNeoMatrix(matrix);

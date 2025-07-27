@@ -76,6 +76,10 @@ void StateMachine::update() {
       handleWiFiConnectState();
       break;
       
+    case STATE_WIFI_CONNECT_FAILED:
+      handleWiFiConnectFailedState();
+      break;
+      
     case STATE_TIME_SYNC:
       handleTimeSyncState();
       break;
@@ -182,8 +186,8 @@ void StateMachine::handleWiFiDisplayState() {
               Serial.println("WiFi connection successful!");
               changeState(STATE_TIME_SYNC);
             } else {
-              Serial.println("WiFi connection failed! Returning to network selection.");
-              changeState(STATE_WIFI_DISPLAY);
+              Serial.println("WiFi connection failed! Showing failure screen.");
+              changeState(STATE_WIFI_CONNECT_FAILED);
             }
           } else {
             // Secured network - go to password entry
@@ -208,6 +212,29 @@ void StateMachine::handleWiFiConnectState() {
   // Future: Connect to selected WiFi network
   Serial.println("WiFi Connect state - Not implemented yet");
   changeState(STATE_WIFI_DISPLAY);
+}
+
+void StateMachine::handleWiFiConnectFailedState() {
+  // Display connection failure message only once when entering this state
+  if (stateChanged || displayNeedsUpdate) {
+    displayWiFiConnectionFailed(tft, matrix);
+    stateChanged = false;
+    displayNeedsUpdate = false;
+  }
+  
+  // Use static variable to track timing for this state
+  static unsigned long failureStartTime = 0;
+  
+  // Initialize timer on first entry
+  if (failureStartTime == 0) {
+    failureStartTime = millis();
+  }
+  
+  // Check if 2 seconds have elapsed
+  if (millis() - failureStartTime >= 2000) {
+    failureStartTime = 0; // Reset for next time
+    changeState(STATE_WIFI_SCAN); // Go back to rescan WiFi
+  }
 }
 
 void StateMachine::handleTimeSyncState() {
@@ -253,8 +280,8 @@ void StateMachine::handlePasswordEntryState() {
         Serial.println("WiFi connection successful!");
         changeState(STATE_TIME_SYNC);
       } else {
-        Serial.println("WiFi connection failed! Returning to network selection.");
-        changeState(STATE_WIFI_DISPLAY);
+        Serial.println("WiFi connection failed! Showing failure screen.");
+        changeState(STATE_WIFI_CONNECT_FAILED);
       }
       break;
       
