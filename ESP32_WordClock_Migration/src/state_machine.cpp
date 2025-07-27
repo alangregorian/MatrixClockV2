@@ -238,9 +238,54 @@ void StateMachine::handleWiFiConnectState() {
 }
 
 void StateMachine::handleTimeSyncState() {
-  // Future: NTP time synchronization
-  Serial.println("Time Sync state - Not implemented yet");
-  changeState(STATE_CLOCK_DISPLAY);
+  Serial.printf("[STATE_TIME_SYNC] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
+  // Initialize time manager on first entry
+  static bool timeManagerInitialized = false;
+  if (stateChanged || displayNeedsUpdate) {
+    if (!timeManagerInitialized) {
+      Serial.println("[TIME_SYNC] Initializing time manager...");
+      if (timeManager.initialize()) {
+        timeManagerInitialized = true;
+        Serial.println("[TIME_SYNC] Time manager initialized successfully");
+      } else {
+        Serial.println("[TIME_SYNC] Failed to initialize time manager");
+        changeState(STATE_WIFI_FAILURE);
+        return;
+      }
+    }
+    
+    // Display sync status
+    displayTimeSyncStatus(tft, timeManager.getStatusString());
+    stateChanged = false;
+    displayNeedsUpdate = false;
+  }
+  
+  // Attempt time sync if not already synced
+  if (timeManager.getSyncStatus() == TIME_NOT_SYNCED || 
+      timeManager.getSyncStatus() == TIME_SYNC_FAILED) {
+    
+    Serial.println("[TIME_SYNC] Attempting NTP sync...");
+    if (timeManager.syncTime()) {
+      Serial.println("[TIME_SYNC] Time sync successful!");
+      // Brief delay to show success message
+      delay(1000);
+      changeState(STATE_CLOCK_DISPLAY);
+    } else {
+      Serial.println("[TIME_SYNC] Time sync failed!");
+      // Show failure for a moment, then retry or continue
+      displayTimeSyncStatus(tft, "Sync Failed");
+      delay(2000);
+      
+      // For now, continue to clock display even if sync failed
+      // In the future, could add retry logic or fallback
+      changeState(STATE_CLOCK_DISPLAY);
+    }
+  } else if (timeManager.getSyncStatus() == TIME_SYNC_SUCCESS) {
+    // Already synced, move to clock display
+    changeState(STATE_CLOCK_DISPLAY);
+  }
 }
 
 void StateMachine::handlePasswordEntryState() {
@@ -375,7 +420,69 @@ void StateMachine::handleWiFiFailureState() {
 }
 
 void StateMachine::handleClockDisplayState() {
-  // Future: WordClock display mode
-  Serial.println("Clock Display state - Not implemented yet");
-  changeState(STATE_WIFI_DISPLAY);
+  Serial.printf("[STATE_CLOCK_DISPLAY] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
+  // Update display when needed
+  static unsigned long lastDisplayUpdate = 0;
+  unsigned long currentTime = millis();
+  
+  if (stateChanged || displayNeedsUpdate || (currentTime - lastDisplayUpdate > 1000)) {
+    // Get current time and date from time manager
+    String timeString = timeManager.getFormattedTime();
+    String dateString = timeManager.getFormattedDate();
+    String statusString = timeManager.getStatusString();
+    
+    // Display the clock screen
+    displayClockScreen(tft, timeString, dateString, statusString);
+    
+    lastDisplayUpdate = currentTime;
+    stateChanged = false;
+    displayNeedsUpdate = false;
+    
+    Serial.printf("[CLOCK_DISPLAY] Time: %s, Date: %s, Status: %s\n", 
+                  timeString.c_str(), dateString.c_str(), statusString.c_str());
+  }
+  
+  // Handle button inputs for navigation and settings
+  ButtonEvent buttonEvent = handleButtons();
+  switch (buttonEvent) {
+    case BUTTON_A_PRESSED:
+      // Future: Settings menu
+      Serial.println("Settings button pressed - not implemented yet");
+      break;
+      
+    case BUTTON_B_PRESSED:
+      // Force time sync
+      Serial.println("Force sync button pressed");
+      if (timeManager.forceSync()) {
+        Serial.println("Time sync successful!");
+        displayNeedsUpdate = true;
+      } else {
+        Serial.println("Time sync failed!");
+        displayNeedsUpdate = true;
+      }
+      break;
+      
+    case BUTTON_C_PRESSED:
+      // Go back to WiFi settings
+      Serial.println("WiFi settings button pressed");
+      changeState(STATE_WIFI_DISPLAY);
+      break;
+      
+    case NO_BUTTON:
+      // Stay in clock display state
+      break;
+  }
+  
+  // Check if time sync is needed periodically
+  if (timeManager.needsTimeSync()) {
+    Serial.println("[CLOCK_DISPLAY] Time sync needed, attempting sync...");
+    if (timeManager.syncTime()) {
+      Serial.println("[CLOCK_DISPLAY] Background sync successful");
+      displayNeedsUpdate = true;
+    } else {
+      Serial.println("[CLOCK_DISPLAY] Background sync failed");
+    }
+  }
 }

@@ -18,6 +18,11 @@ void displayConnectingMessage(Adafruit_ST7789& tft, const String& ssid);
 void displayWiFiSuccess(Adafruit_ST7789& tft, const String& ssid, const String& ipAddress, int32_t rssi);
 void displayWiFiFailure(Adafruit_ST7789& tft, const String& ssid);
 
+// Time display functions
+void displayTimeSyncStatus(Adafruit_ST7789& tft, const String& status);
+void displayCurrentTime(Adafruit_ST7789& tft, const String& timeString, const String& dateString);
+void displayClockScreen(Adafruit_ST7789& tft, const String& timeString, const String& dateString, const String& status);
+
 // Display clearing functions
 void clearTFTScreen(Adafruit_ST7789& tft, uint16_t color = ST77XX_BLACK);
 void clearNeoMatrix(Adafruit_NeoMatrix& matrix);

@@ -7,6 +7,7 @@
 #include "wifi_manager.h"
 #include "display_manager.h"
 #include "button_handler.h"
+#include "time_manager.h"
 
 // System State Machine
 enum SystemState {

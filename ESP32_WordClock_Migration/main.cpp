@@ -24,6 +24,7 @@
 #include "include/display_manager.h"
 #include "include/button_handler.h"
 #include "include/state_machine.h"
+#include "include/time_manager.h"
 
 // TFT Display pins are predefined by ESP32-S2 Reverse TFT Feather board variant
 // TFT_CS = 42, TFT_RST = 41, TFT_DC = 40, TFT_MOSI = 35, TFT_SCLK = 36, TFT_BACKLIGHT = 45

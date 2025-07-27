@@ -497,6 +497,183 @@ void displayWiFiFailure(Adafruit_ST7789& tft, const String& ssid) {
   tft.println("A: Retry  B: New Pass  C: Back");
 }
 
+void displayTimeSyncStatus(Adafruit_ST7789& tft, const String& status) {
+  // Clear screen first
+  clearTFTScreen(tft);
+  
+  // Display header
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(10, 10);
+  tft.println("Time Sync");
+  
+  // Draw separator line
+  tft.drawLine(10, 35, 230, 35, ST77XX_BLUE);
+  
+  // Display sync status
+  tft.setTextSize(2);
+  tft.setCursor(10, 50);
+  
+  // Color based on status
+  if (status == "Syncing...") {
+    tft.setTextColor(ST77XX_YELLOW);
+  } else if (status == "Synced") {
+    tft.setTextColor(ST77XX_GREEN);
+  } else if (status == "Sync Failed") {
+    tft.setTextColor(ST77XX_RED);
+  } else {
+    tft.setTextColor(ST77XX_WHITE);
+  }
+  
+  // Safely display status
+  char displayStatus[21]; // Fixed size buffer
+  if (status.length() > 20) {
+    strncpy(displayStatus, status.c_str(), 20);
+    displayStatus[20] = '\0';
+  } else {
+    strncpy(displayStatus, status.c_str(), 20);
+    displayStatus[20] = '\0';
+  }
+  tft.println(displayStatus);
+  
+  // Display additional info
+  tft.setTextSize(1);
+  tft.setCursor(10, 85);
+  tft.setTextColor(ST77XX_CYAN);
+  tft.println("Connecting to NTP server...");
+  
+  tft.setCursor(10, 100);
+  tft.setTextColor(0x7BEF); // Light gray color
+  tft.println("Server: pool.ntp.org");
+  
+  tft.setCursor(10, 115);
+  tft.println("Please wait...");
+}
+
+void displayCurrentTime(Adafruit_ST7789& tft, const String& timeString, const String& dateString) {
+  // Clear screen first
+  clearTFTScreen(tft);
+  
+  // Display large time
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(3);
+  tft.setCursor(20, 30);
+  
+  // Safely display time
+  char displayTime[12]; // Fixed size buffer for HH:MM:SS + null
+  if (timeString.length() > 11) {
+    strncpy(displayTime, timeString.c_str(), 11);
+    displayTime[11] = '\0';
+  } else {
+    strncpy(displayTime, timeString.c_str(), 11);
+    displayTime[11] = '\0';
+  }
+  tft.println(displayTime);
+  
+  // Display date
+  tft.setTextSize(2);
+  tft.setCursor(30, 80);
+  tft.setTextColor(ST77XX_CYAN);
+  
+  // Safely display date
+  char displayDate[15]; // Fixed size buffer for YYYY-MM-DD + null
+  if (dateString.length() > 14) {
+    strncpy(displayDate, dateString.c_str(), 14);
+    displayDate[14] = '\0';
+  } else {
+    strncpy(displayDate, dateString.c_str(), 14);
+    displayDate[14] = '\0';
+  }
+  tft.println(displayDate);
+  
+  // Display timezone info
+  tft.setTextSize(1);
+  tft.setCursor(10, 115);
+  tft.setTextColor(0x7BEF); // Light gray color
+  tft.println("Central Time (US)");
+}
+
+void displayClockScreen(Adafruit_ST7789& tft, const String& timeString, const String& dateString, const String& status) {
+  // Clear screen first
+  clearTFTScreen(tft);
+  
+  // Display header
+  tft.setTextColor(ST77XX_GREEN);
+  tft.setTextSize(1);
+  tft.setCursor(10, 5);
+  tft.println("ESP32 WordClock");
+  
+  // Draw separator line
+  tft.drawLine(10, 20, 230, 20, ST77XX_GREEN);
+  
+  // Display large time
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(3);
+  tft.setCursor(20, 35);
+  
+  // Safely display time
+  char displayTime[12]; // Fixed size buffer for HH:MM:SS + null
+  if (timeString.length() > 11) {
+    strncpy(displayTime, timeString.c_str(), 11);
+    displayTime[11] = '\0';
+  } else {
+    strncpy(displayTime, timeString.c_str(), 11);
+    displayTime[11] = '\0';
+  }
+  tft.println(displayTime);
+  
+  // Display date
+  tft.setTextSize(1);
+  tft.setCursor(50, 75);
+  tft.setTextColor(ST77XX_CYAN);
+  
+  // Safely display date
+  char displayDate[15]; // Fixed size buffer for YYYY-MM-DD + null
+  if (dateString.length() > 14) {
+    strncpy(displayDate, dateString.c_str(), 14);
+    displayDate[14] = '\0';
+  } else {
+    strncpy(displayDate, dateString.c_str(), 14);
+    displayDate[14] = '\0';
+  }
+  tft.println(displayDate);
+  
+  // Display sync status
+  tft.setCursor(10, 95);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.print("Status: ");
+  
+  // Color based on status
+  if (status == "Synced") {
+    tft.setTextColor(ST77XX_GREEN);
+  } else if (status == "Sync Failed") {
+    tft.setTextColor(ST77XX_RED);
+  } else {
+    tft.setTextColor(ST77XX_YELLOW);
+  }
+  
+  // Safely display status
+  char displayStatus[16]; // Fixed size buffer
+  if (status.length() > 15) {
+    strncpy(displayStatus, status.c_str(), 15);
+    displayStatus[15] = '\0';
+  } else {
+    strncpy(displayStatus, status.c_str(), 15);
+    displayStatus[15] = '\0';
+  }
+  tft.println(displayStatus);
+  
+  // Display timezone info
+  tft.setCursor(10, 110);
+  tft.setTextColor(0x7BEF); // Light gray color
+  tft.println("Central Time (US)");
+  
+  // Display button instructions
+  tft.setCursor(10, 125);
+  tft.setTextColor(0x5AEB); // Darker gray
+  tft.println("A: Settings  B: Sync  C: WiFi");
+}
+
 void clearAllDisplays(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
   clearTFTScreen(tft);
   clearNeoMatrix(matrix);

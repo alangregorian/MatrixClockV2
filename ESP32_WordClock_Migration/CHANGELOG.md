@@ -1,5 +1,97 @@
 # WordClock Version History
 
+## Version 0.4.1 (Critical Time Sync Bug Fixes)
+**Date**: July 27, 2025
+**Critical Bug Fixes**:
+- **MAJOR**: Fixed critical time calculation bug in `getCurrentEpoch()` causing incorrect date/time display
+- **MAJOR**: Resolved time drift issue where clock showed wrong dates (e.g., August 31st instead of July 27th)
+- **MAJOR**: Fixed `needsTimeSync()` function using incorrect time comparison logic
+- Fixed timezone offset application - now properly stores UTC time and applies offset during display
+- Improved DST calculation with proper Sunday calculation algorithm for US Central Time
+- Added proper tracking of sync timing with `lastSyncMillis` variable
+
+**Time Calculation Improvements**:
+- Separated UTC time storage from timezone-adjusted display time
+- Fixed millis() overflow handling in time calculations
+- Corrected elapsed time calculation since last NTP sync
+- Improved time precision and eliminated accumulating errors
+- Added comprehensive debug logging for time sync operations
+
+**DST Algorithm Enhancements**:
+- Replaced simplified DST logic with accurate day-of-week calculations
+- Proper second Sunday in March and first Sunday in November calculations
+- Fixed DST transition dates for US Central Time zone
+- Eliminated hardcoded date assumptions that caused incorrect DST application
+
+**Technical Improvements**:
+- Added `lastSyncMillis` tracking variable to header and implementation
+- Enhanced debug output showing UTC epoch, sync timing, and timezone offsets
+- Better separation of UTC time storage and local time display
+- Improved error handling and validation in time calculations
+- More robust time sync interval checking
+
+**Impact**: These fixes resolve the fundamental time synchronization issues that caused the clock to display incorrect dates and times, ensuring accurate timekeeping aligned with actual current time.
+
+## Version 0.4.0 (Time Management & NTP Synchronization)
+**Date**: January 27, 2025
+**Features Added**:
+- **NEW**: Complete time management system with NTP synchronization
+- **NEW**: Added comprehensive `TimeManager` class for time operations
+- **NEW**: Implemented NTP client functionality for automatic time sync
+- **NEW**: Added time sync status display with visual feedback
+- **NEW**: Created clock display screen showing current time and date
+- Added new `STATE_TIME_SYNC` and `STATE_CLOCK_DISPLAY` states to state machine
+- Implemented automatic DST (Daylight Saving Time) calculation for US Central Time
+- Added periodic time synchronization with configurable intervals
+
+**Time Manager Features**:
+- NTP synchronization with pool.ntp.org servers
+- Automatic timezone offset calculation with DST support
+- Multiple time format functions: `getFormattedTime()`, `getFormattedDate()`, `getFormattedDateTime()`
+- Individual time component access: `getHours()`, `getMinutes()`, `getSeconds()`, etc.
+- Time sync status tracking with enum states (NOT_SYNCED, SYNCING, SUCCESS, FAILED)
+- Configurable sync intervals and force sync capability
+- Time validation and status reporting
+
+**Display Functions Added**:
+- `displayTimeSyncStatus()`: Shows NTP sync progress with color-coded status
+- `displayCurrentTime()`: Large time display with date and timezone info
+- `displayClockScreen()`: Complete clock interface with time, date, status, and controls
+- Color-coded sync status (Yellow=Syncing, Green=Synced, Red=Failed)
+- Real-time clock updates every second
+
+**State Machine Enhancements**:
+- Enhanced state flow: WiFi Success → Time Sync → Clock Display
+- Time sync state with automatic progression and error handling
+- Clock display state with button controls (A=Settings, B=Force Sync, C=WiFi)
+- Background time sync checks and automatic re-sync when needed
+- Proper error handling and fallback behavior
+
+**Technical Improvements**:
+- Added WiFiUDP and NTPClient integration for time synchronization
+- Implemented DST calculation algorithm for US Central Time zone
+- Added time manager initialization and cleanup functions
+- Enhanced state machine with time-related state handlers
+- Memory-efficient time management with minimal heap usage
+- Robust error handling for network time sync failures
+
+**User Experience Enhancements**:
+- Clear visual feedback during time synchronization process
+- Large, easy-to-read time display with date information
+- Intuitive button controls for time sync and navigation
+- Automatic time updates without user intervention
+- Graceful handling of sync failures with retry options
+- Timezone information display for user awareness
+
+**Clock Display Features**:
+- Large 3x size time display (HH:MM:SS format)
+- Date display in YYYY-MM-DD format
+- Sync status indicator with color coding
+- Central Time (US) timezone label
+- Button instructions: A=Settings, B=Sync, C=WiFi
+- Real-time updates every second
+- Force sync capability via button B
+
 ## Version 0.3.4 (WiFi Success & Failure Screens)
 **Date**: January 26, 2025
 **Features Added**:
@@ -195,7 +287,7 @@
 - Version management system with changelog tracking
 
 ## Future Planned Versions
-- **0.2.0**: NTP time synchronization
-- **0.3.0**: WordClock display mode
-- **0.4.0**: Settings and configuration management
-- **1.0.0**: Full feature release
+- **0.5.0**: WordClock display mode with LED matrix word illumination
+- **0.6.0**: Settings and configuration management
+- **0.7.0**: Advanced features (brightness control, color themes, etc.)
+- **1.0.0**: Full feature release with complete WordClock functionality
