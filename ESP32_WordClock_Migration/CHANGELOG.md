@@ -1,5 +1,29 @@
 # WordClock Version History
 
+## Version 0.2.4 (WiFi Connection UI Enhancement)
+**Date**: January 26, 2025
+**Features Added**:
+- **NEW**: Added "Connecting..." display message on TFT when password is submitted
+- Added new `STATE_WIFI_CONNECTING` state for better user feedback
+- Implemented `displayConnectingMessage()` function with network name display
+- Enhanced user experience with immediate visual feedback during connection attempts
+- Added connection timeout display (10 seconds) for user awareness
+- Improved state flow: Password Entry → Connecting Display → Connection Result
+
+**Technical Improvements**:
+- Added new connecting state to state machine architecture
+- Enhanced display manager with connecting message function
+- Improved state transitions for both secured and open networks
+- Better separation of connection logic from display logic
+- Consistent "Connecting..." experience for all network types
+
+**User Experience Enhancements**:
+- Users now see immediate feedback when submitting passwords
+- Clear indication that system is actively attempting connection
+- Network name displayed during connection attempt
+- Timeout information provided to set user expectations
+- No more "frozen" appearance during connection attempts
+
 ## Version 0.1.4 (Critical Stability Fixes)
 **Date**: January 26, 2025
 **Critical Bug Fixes**:
