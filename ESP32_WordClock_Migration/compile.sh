@@ -27,18 +27,34 @@ cp -r include "$TEMP_SKETCH_DIR/$SKETCH_NAME/"
 
 echo "Temporary sketch created in $TEMP_SKETCH_DIR"
 
-# Compile the project
-echo "Compiling with Arduino CLI..."
-arduino-cli compile --fqbn "$BOARD_FQBN" "$TEMP_SKETCH_DIR/$SKETCH_NAME"
+# Compile the project with ESP32-S2 specific memory management flags
+echo "Compiling with Arduino CLI and ESP32-S2 memory optimizations..."
+arduino-cli compile --fqbn "$BOARD_FQBN" \
+  --build-property "build.partitions=huge_app" \
+  --build-property "build.psram=enabled" \
+  --build-property "compiler.c.extra_flags=-DBOARD_HAS_PSRAM -mfix-esp32-psram-cache-issue -DCONFIG_SPIRAM_SUPPORT=1" \
+  --build-property "compiler.cpp.extra_flags=-DBOARD_HAS_PSRAM -mfix-esp32-psram-cache-issue -DCONFIG_SPIRAM_SUPPORT=1" \
+  --build-property "build.flash_size=4MB" \
+  --build-property "build.flash_freq=80m" \
+  --build-property "build.flash_mode=qio" \
+  "$TEMP_SKETCH_DIR/$SKETCH_NAME"
 
 # Check compilation result
 if [ $? -eq 0 ]; then
     echo "✅ Compilation successful!"
     
-    # Show memory usage
+    # Show memory usage with the same flags
     echo ""
-    echo "Memory Usage:"
-    arduino-cli compile --fqbn "$BOARD_FQBN" "$TEMP_SKETCH_DIR/$SKETCH_NAME" 2>&1 | grep -E "(Sketch uses|Global variables use)"
+    echo "Memory Usage (with ESP32-S2 optimizations):"
+    arduino-cli compile --fqbn "$BOARD_FQBN" \
+      --build-property "build.partitions=huge_app" \
+      --build-property "build.psram=enabled" \
+      --build-property "compiler.c.extra_flags=-DBOARD_HAS_PSRAM -mfix-esp32-psram-cache-issue -DCONFIG_SPIRAM_SUPPORT=1" \
+      --build-property "compiler.cpp.extra_flags=-DBOARD_HAS_PSRAM -mfix-esp32-psram-cache-issue -DCONFIG_SPIRAM_SUPPORT=1" \
+      --build-property "build.flash_size=4MB" \
+      --build-property "build.flash_freq=80m" \
+      --build-property "build.flash_mode=qio" \
+      "$TEMP_SKETCH_DIR/$SKETCH_NAME" 2>&1 | grep -E "(Sketch uses|Global variables use)"
     
     # Copy compiled files back to main directory
     if [ -d "$TEMP_SKETCH_DIR/$SKETCH_NAME/build" ]; then

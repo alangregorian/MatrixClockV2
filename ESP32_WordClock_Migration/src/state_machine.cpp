@@ -1,4 +1,5 @@
 #include "../include/state_machine.h"
+#include "../include/wifi_manager.h"
 
 // Character set for password entry
 const char StateMachine::characterSet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>? ";
@@ -88,11 +89,17 @@ void StateMachine::update() {
 
 // State-specific handlers
 void StateMachine::handleInitState() {
+  Serial.printf("[STATE_INIT] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
   // Initialization complete, move to logo display
   changeState(STATE_LOGO_DISPLAY);
 }
 
 void StateMachine::handleLogoDisplayState() {
+  Serial.printf("[STATE_LOGO_DISPLAY] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
   // Display logo only once when entering this state
   if (stateChanged || displayNeedsUpdate) {
     displayClockLogo(tft);
@@ -116,6 +123,9 @@ void StateMachine::handleLogoDisplayState() {
 }
 
 void StateMachine::handleStartupMessageState() {
+  Serial.printf("[STATE_STARTUP_MESSAGE] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
   // Display startup message only once when entering this state
   if (stateChanged || displayNeedsUpdate) {
     displayStartupMessage(tft);
@@ -139,9 +149,14 @@ void StateMachine::handleStartupMessageState() {
 }
 
 void StateMachine::handleWiFiScanState() {
+  Serial.printf("[STATE_WIFI_SCAN] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
   // Perform WiFi scan only once per state entry
   if (stateChanged || displayNeedsUpdate) {
+    Serial.printf("[WIFI_SCAN] Before scan - Free Heap: %d\n", ESP.getFreeHeap());
     scanWiFiNetworks();
+    Serial.printf("[WIFI_SCAN] After scan - Free Heap: %d\n", ESP.getFreeHeap());
     stateChanged = false;
     displayNeedsUpdate = true; // Will need to display results
   }
@@ -149,6 +164,9 @@ void StateMachine::handleWiFiScanState() {
 }
 
 void StateMachine::handleWiFiDisplayState() {
+  Serial.printf("[STATE_WIFI_DISPLAY] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
   // Handle button inputs
   ButtonEvent buttonEvent = handleButtons();
   
@@ -156,10 +174,12 @@ void StateMachine::handleWiFiDisplayState() {
   if (getNetworkCount() > 0) {
     // Only update display when needed
     if (displayNeedsUpdate || stateChanged) {
+      Serial.printf("[WIFI_DISPLAY] Before display - Free Heap: %d\n", ESP.getFreeHeap());
       // Get current network info from wifi_manager
       WiFiNetworkInfo networkInfo = getCurrentNetworkInfo();
-      // Display it using display_manager
-      displayCurrentNetwork(tft, matrix, networkInfo);
+      // Display it using display_manager with current index and total count
+      displayCurrentNetwork(tft, matrix, networkInfo, currentNetwork, getNetworkCount());
+      Serial.printf("[WIFI_DISPLAY] After display - Free Heap: %d\n", ESP.getFreeHeap());
       displayNeedsUpdate = false;
       stateChanged = false;
     }
@@ -217,6 +237,9 @@ void StateMachine::handleTimeSyncState() {
 }
 
 void StateMachine::handlePasswordEntryState() {
+  Serial.printf("[STATE_PASSWORD_ENTRY] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
   // Handle button inputs
   ButtonEvent buttonEvent = handleButtons();
   

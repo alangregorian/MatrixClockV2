@@ -93,6 +93,8 @@ void setup() {
   // State machine will handle logo display automatically
   Serial.println("DEBUG: Setup complete - entering main loop");
   Serial.println("DEBUG: Logo will be displayed by state machine for 4 seconds");
+  Serial.printf("[SETUP_COMPLETE] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
   Serial.flush();
 }
 

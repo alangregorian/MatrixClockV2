@@ -135,7 +135,7 @@ void drawSignalBars(Adafruit_ST7789& tft, int32_t rssi, int x, int y) {
   }
 }
 
-void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, const WiFiNetworkInfo& networkInfo) {
+void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, const WiFiNetworkInfo& networkInfo, int currentIndex, int totalNetworks) {
   // Clear screen first to remove previous content
   clearTFTScreen(tft);
   
@@ -155,10 +155,17 @@ void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, con
   tft.print("SSID: ");
   tft.setTextColor(ST77XX_WHITE);
   
-  // Truncate SSID if too long (max ~25 chars for 240px width)
-  String displaySSID = networkInfo.ssid;
-  if (displaySSID.length() > 25) {
-    displaySSID = displaySSID.substring(0, 22) + "...";
+  // Safely truncate SSID if too long (max ~25 chars for 240px width)
+  char displaySSID[26]; // Fixed size buffer to prevent heap issues
+  if (networkInfo.ssid.length() > 25) {
+    strncpy(displaySSID, networkInfo.ssid.c_str(), 22);
+    displaySSID[22] = '.';
+    displaySSID[23] = '.';
+    displaySSID[24] = '.';
+    displaySSID[25] = '\0';
+  } else {
+    strncpy(displaySSID, networkInfo.ssid.c_str(), 25);
+    displaySSID[25] = '\0';
   }
   tft.println(displaySSID);
   
@@ -179,38 +186,40 @@ void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, con
   tft.print("Security: ");
   tft.setTextColor(ST77XX_WHITE);
   
-  // Convert encryption type to readable string
-  String encType;
+  // Convert encryption type to readable string (using const char* to avoid String operations)
+  const char* encType;
+  uint16_t encColor;
   switch (networkInfo.encryption) {
     case WIFI_AUTH_OPEN:
       encType = "Open";
-      tft.setTextColor(ST77XX_RED);
+      encColor = ST77XX_RED;
       break;
     case WIFI_AUTH_WEP:
       encType = "WEP";
-      tft.setTextColor(ST77XX_YELLOW);
+      encColor = ST77XX_YELLOW;
       break;
     case WIFI_AUTH_WPA_PSK:
       encType = "WPA";
-      tft.setTextColor(ST77XX_GREEN);
+      encColor = ST77XX_GREEN;
       break;
     case WIFI_AUTH_WPA2_PSK:
       encType = "WPA2";
-      tft.setTextColor(ST77XX_GREEN);
+      encColor = ST77XX_GREEN;
       break;
     case WIFI_AUTH_WPA_WPA2_PSK:
       encType = "WPA/WPA2";
-      tft.setTextColor(ST77XX_GREEN);
+      encColor = ST77XX_GREEN;
       break;
     case WIFI_AUTH_WPA2_ENTERPRISE:
       encType = "WPA2-ENT";
-      tft.setTextColor(ST77XX_GREEN);
+      encColor = ST77XX_GREEN;
       break;
     default:
       encType = "Unknown";
-      tft.setTextColor(ST77XX_WHITE);
+      encColor = ST77XX_WHITE;
       break;
   }
+  tft.setTextColor(encColor);
   tft.println(encType);
   
   // Display navigation instructions
@@ -219,16 +228,16 @@ void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, con
   tft.setCursor(10, 100);
   tft.println("A: Next  B: Select  C: Rescan");
   
-  // Display network count info
+  // Display network count info using passed parameters
   tft.setCursor(10, 115);
   tft.setTextColor(0x7BEF); // Light gray color (RGB565 format)
   tft.print("Network ");
-  tft.print(currentNetwork + 1);
+  tft.print(currentIndex + 1);
   tft.print(" of ");
-  tft.println(getNetworkCount());
+  tft.println(totalNetworks);
   
-  // Clear NeoMatrix (optional - could show signal strength pattern)
-  clearNeoMatrix(matrix);
+  // Skip NeoMatrix operations for now since we're focusing on TFT stability
+  // clearNeoMatrix(matrix);
 }
 
 // Display clearing functions
@@ -261,19 +270,36 @@ void displayPasswordEntry(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, cons
   tft.print("Network: ");
   tft.setTextColor(ST77XX_WHITE);
   
-  // Truncate SSID if too long
-  String displaySSID = ssid;
-  if (displaySSID.length() > 20) {
-    displaySSID = displaySSID.substring(0, 17) + "...";
+  // Safely truncate SSID if too long (using fixed buffer to prevent heap issues)
+  char displaySSID[21]; // Fixed size buffer for max 20 chars + null terminator
+  if (ssid.length() > 20) {
+    strncpy(displaySSID, ssid.c_str(), 17);
+    displaySSID[17] = '.';
+    displaySSID[18] = '.';
+    displaySSID[19] = '.';
+    displaySSID[20] = '\0';
+  } else {
+    strncpy(displaySSID, ssid.c_str(), 20);
+    displaySSID[20] = '\0';
   }
   tft.println(displaySSID);
   
-  // Display current password (masked)
+  // Display current password (masked) - safely handle the String
   tft.setCursor(10, 60);
   tft.setTextColor(ST77XX_YELLOW);
   tft.print("Password: ");
   tft.setTextColor(ST77XX_WHITE);
-  tft.print(maskedPassword);
+  
+  // Use safe approach for masked password display
+  char safePassword[33]; // Max 32 chars + null terminator
+  if (maskedPassword.length() > 32) {
+    strncpy(safePassword, maskedPassword.c_str(), 32);
+    safePassword[32] = '\0';
+  } else {
+    strncpy(safePassword, maskedPassword.c_str(), 32);
+    safePassword[32] = '\0';
+  }
+  tft.print(safePassword);
   
   // Display current character being selected
   tft.setCursor(10, 75);
@@ -291,8 +317,8 @@ void displayPasswordEntry(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, cons
   tft.setCursor(10, 115);
   tft.println("B: Confirm Char  C: Submit");
   
-  // Clear NeoMatrix
-  clearNeoMatrix(matrix);
+  // Skip NeoMatrix operations for stability
+  // clearNeoMatrix(matrix);
 }
 
 void clearAllDisplays(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {

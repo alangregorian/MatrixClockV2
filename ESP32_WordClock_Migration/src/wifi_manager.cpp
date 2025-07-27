@@ -13,21 +13,22 @@ void scanWiFiNetworks() {
   Serial.println("Scanning for WiFi networks...");
   
   // Perform WiFi scan
-  networkCount = WiFi.scanNetworks();
+  int totalNetworks = WiFi.scanNetworks();
   lastScan = millis();
   
-  Serial.printf("Found %d networks\n", networkCount);
+  // Limit to top networks by signal strength (WiFi.scanNetworks() sorts by RSSI)
+  networkCount = min(totalNetworks, MAX_NETWORKS);
+  
+  Serial.printf("Found %d networks, showing top %d by signal strength\n", totalNetworks, networkCount);
   
   if (networkCount > 0) {
     currentNetwork = 0; // Reset to first network
     
-    // Print all found networks to serial for debugging
-    for (int i = 0; i < networkCount; i++) {
-      Serial.printf("Network %d: %s (%d dBm) %s\n", 
-                    i + 1, 
-                    WiFi.SSID(i).c_str(), 
-                    WiFi.RSSI(i), 
-                    getEncryptionType(WiFi.encryptionType(i)));
+    // Safe output - just show we have networks without the problematic loop
+    Serial.printf("Strongest network: %s (%d dBm)\n", 
+                  WiFi.SSID(0).c_str(), WiFi.RSSI(0));
+    if (networkCount > 1) {
+      Serial.printf("Total available for selection: %d networks\n", networkCount);
     }
   } else {
     Serial.println("No WiFi networks found");
@@ -87,7 +88,10 @@ const char* getEncryptionType(wifi_auth_mode_t encryptionType) {
 void nextNetwork() {
   if (networkCount > 0) {
     currentNetwork = (currentNetwork + 1) % networkCount;
-    Serial.printf("Next network: %d (%s)\n", currentNetwork + 1, WiFi.SSID(currentNetwork).c_str());
+    // Add bounds checking before accessing WiFi data
+    if (currentNetwork >= 0 && currentNetwork < networkCount) {
+      Serial.printf("Next network: %d (%s)\n", currentNetwork + 1, WiFi.SSID(currentNetwork).c_str());
+    }
   }
 }
 

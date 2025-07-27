@@ -10,6 +10,9 @@ extern int currentNetwork;
 extern unsigned long lastScan;
 extern const unsigned long SCAN_INTERVAL;
 
+// WiFi scanning limits
+const int MAX_NETWORKS = 10;  // Limit to top 10 networks by signal strength
+
 // WiFi network data structure
 struct WiFiNetworkInfo {
   String ssid;
