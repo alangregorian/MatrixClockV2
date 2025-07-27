@@ -1,5 +1,44 @@
 # WordClock Version History
 
+## Version 0.1.4 (Critical Stability Fixes)
+**Date**: January 26, 2025
+**Critical Bug Fixes**:
+- **MAJOR**: Fixed recurring crash issues that occurred whenever new code was added to the project
+- **MAJOR**: Resolved memory corruption in display functions causing system instability
+- **MAJOR**: Fixed unsafe String operations causing heap fragmentation and crashes
+- Fixed crash in `displayCurrentNetwork()` function after WiFi network scanning
+- Fixed crash in `displayPasswordEntry()` function during password input
+- Eliminated external variable dependencies causing undefined behavior
+
+**Memory Management Improvements**:
+- Replaced unsafe String concatenations with fixed-size char arrays
+- Added bounds checking for all string operations in display functions
+- Implemented safe string truncation with proper null termination
+- Added ESP32-S2 specific memory optimization compiler flags
+- Enabled PSRAM support and huge_app partition scheme for better memory management
+- Limited WiFi network scanning to top 10 networks to prevent memory overflow
+
+**Display System Stability**:
+- Refactored `displayCurrentNetwork()` to use passed parameters instead of external variables
+- Refactored `displayPasswordEntry()` with safe string handling and fixed buffers
+- Temporarily disabled NeoMatrix operations to improve stability
+- Added proper include dependencies in state machine
+- Fixed function signatures to match updated display manager interface
+
+**Build System Enhancements**:
+- Added memory optimization flags: `-fstack-protector`, `-fno-exceptions`
+- Enabled ESP32-S2 PSRAM support with `CONFIG_SPIRAM_SUPPORT=y`
+- Added huge app partition scheme for larger program space
+- Improved compiler flags for better memory management
+
+**Technical Improvements**:
+- Enhanced parameter passing between modules to eliminate unsafe global access
+- Improved code robustness with defensive programming practices
+- Better separation of concerns between display and data management
+- More predictable memory usage patterns
+
+**Impact**: These fixes resolved the fundamental stability issues that made the system crash whenever any modifications were made to the codebase. The system is now stable and can handle feature additions without memory-related crashes.
+
 ## Version 0.1.3 (WiFi Password Entry System)
 **Date**: January 26, 2025
 **Features Added**:
