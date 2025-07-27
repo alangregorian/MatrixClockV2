@@ -136,14 +136,19 @@ void drawSignalBars(Adafruit_ST7789& tft, int32_t rssi, int x, int y) {
 }
 
 void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, const WiFiNetworkInfo& networkInfo) {
+  Serial.println("DEBUG: Entering displayCurrentNetwork()");
+  Serial.printf("DEBUG: SSID: %s, RSSI: %d\n", networkInfo.ssid.c_str(), networkInfo.rssi);
+  
   // Clear screen first to remove previous content
   clearTFTScreen(tft);
+  Serial.println("DEBUG: Screen cleared");
   
   // Display header
   tft.setTextColor(ST77XX_WHITE);
   tft.setTextSize(2);
   tft.setCursor(10, 10);
   tft.println("WiFi Networks");
+  Serial.println("DEBUG: Header displayed");
   
   // Draw separator line
   tft.drawLine(10, 35, 230, 35, ST77XX_BLUE);
@@ -220,12 +225,20 @@ void displayCurrentNetwork(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, con
   tft.println("A: Next  B: Select  C: Rescan");
   
   // Display network count info
+  Serial.println("DEBUG: About to display network count info");
+  Serial.printf("DEBUG: currentNetwork = %d, getNetworkCount() = %d\n", currentNetwork, getNetworkCount());
+  
   tft.setCursor(10, 115);
   tft.setTextColor(0x7BEF); // Light gray color (RGB565 format)
   tft.print("Network ");
+  
+  Serial.println("DEBUG: About to print currentNetwork + 1");
   tft.print(currentNetwork + 1);
+  Serial.println("DEBUG: Printed currentNetwork + 1");
+  
   tft.print(" of ");
   tft.println(getNetworkCount());
+  Serial.println("DEBUG: Network count info displayed");
   
   // Clear NeoMatrix (optional - could show signal strength pattern)
   clearNeoMatrix(matrix);
