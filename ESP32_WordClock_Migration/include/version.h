@@ -5,7 +5,4 @@
 #define BUILD_DATE __DATE__
 #define BUILD_TIME __TIME__
 
-// Version history and changelog
-extern const char* VERSION_CHANGELOG;
-
 #endif // VERSION_H

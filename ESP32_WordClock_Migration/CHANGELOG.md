@@ -1,5 +1,40 @@
 # WordClock Version History
 
+## Version 0.1.3 (WiFi Password Entry System)
+**Date**: January 26, 2025
+**Features Added**:
+- Replaced 'prev' with 'select' functionality in WiFi results
+- Added complete character-by-character password entry system
+- Implemented STATE_PASSWORD_ENTRY with full character set support
+- Added automatic open network detection (skips password entry)
+- Created displayPasswordEntry() function with visual feedback
+- Added WiFi connection functionality with timeout handling
+- Updated button mappings: A=Next, B=Select, C=Rescan
+- Password entry: A=Cycle Char, B=Confirm Char, C=Submit
+- Added password masking and current character display
+- Improved user experience with proper state transitions
+
+**Technical Improvements**:
+- Enhanced state machine with password entry state
+- Comprehensive character set for password input
+- Automatic network type detection and handling
+- Improved WiFi connection workflow
+
+## Version 0.0.3 (Display Manager Refactoring)
+**Date**: January 25, 2025
+**Features Added**:
+- Added dedicated display clearing functions for better readability
+- Implemented clearTFTScreen() with optional color parameter
+- Added clearNeoMatrix() function for LED matrix clearing
+- Created clearAllDisplays() convenience function
+- Refactored all display functions to use new clear functions
+- Improved code maintainability and consistency
+
+**Technical Improvements**:
+- Better separation of display clearing logic
+- More consistent display management across all functions
+- Enhanced code organization and readability
+
 ## Version 0.0.2 (Display & WiFi Improvements)
 **Date**: January 25, 2025
 **Features Added**:
@@ -52,8 +87,7 @@
 - Version management system with changelog tracking
 
 ## Future Planned Versions
-- **0.0.3**: WiFi connection functionality
-- **0.1.0**: NTP time synchronization
-- **0.2.0**: WordClock display mode
-- **0.3.0**: Settings and configuration management
+- **0.2.0**: NTP time synchronization
+- **0.3.0**: WordClock display mode
+- **0.4.0**: Settings and configuration management
 - **1.0.0**: Full feature release
