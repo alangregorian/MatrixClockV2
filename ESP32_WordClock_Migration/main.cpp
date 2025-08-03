@@ -84,11 +84,11 @@ void setup() {
   Serial.println("DEBUG: Display initialized successfully");
   Serial.flush();
   
-  // Test the NeoMatrix immediately to verify it works
-  Serial.println("DEBUG: Testing NeoMatrix with comprehensive test...");
+  // Show WordClock startup sequence with rainbow cycle
+  Serial.println("DEBUG: Starting WordClock startup sequence...");
   Serial.flush();
-  testNeoMatrix(matrix);
-  Serial.println("DEBUG: NeoMatrix test completed");
+  showWordClockStartup(matrix);
+  Serial.println("DEBUG: WordClock startup sequence completed");
   Serial.flush();
   
   // Initialize WiFi
