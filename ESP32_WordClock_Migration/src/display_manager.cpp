@@ -30,10 +30,42 @@ void initializeDisplay(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
   delay(1000);
   clearTFTScreen(tft);
   
-  // Initialize NeoMatrix
+  // Initialize NeoMatrix (matching working test configuration)
+  Serial.println("Initializing NeoMatrix...");
   matrix.begin();
-  matrix.setBrightness(20);
-  clearNeoMatrix(matrix);
+  matrix.setBrightness(50); // Use same brightness as working test
+  matrix.fillScreen(0); // Clear all pixels
+  matrix.show();
+  
+  // Test the matrix with a comprehensive test pattern
+  Serial.println("Testing NeoMatrix with comprehensive test...");
+  
+  // Test 1: Single pixels
+  matrix.drawPixel(0, 0, matrix.Color(255, 0, 0)); // Red pixel at (0,0)
+  matrix.show();
+  delay(500);
+  
+  matrix.fillScreen(0);
+  matrix.drawPixel(7, 7, matrix.Color(0, 255, 0)); // Green pixel at (7,7)
+  matrix.show();
+  delay(500);
+  
+  // Test 2: Diagonal line
+  matrix.fillScreen(0);
+  for(int i = 0; i < 8; i++) {
+    matrix.drawPixel(i, i, matrix.Color(0, 0, 255)); // Blue diagonal
+  }
+  matrix.show();
+  delay(1000);
+  
+  // Test 3: Brief full matrix test
+  matrix.fillScreen(matrix.Color(20, 20, 20)); // Dim white
+  matrix.show();
+  delay(500);
+  
+  // Clear and finish
+  matrix.fillScreen(0);
+  matrix.show();
   
   Serial.println("Display initialization complete");
 }
@@ -671,7 +703,7 @@ void displayClockScreen(Adafruit_ST7789& tft, const String& timeString, const St
   // Display button instructions
   tft.setCursor(10, 125);
   tft.setTextColor(0x5AEB); // Darker gray
-  tft.println("A: Settings  B: Sync  C: WiFi");
+  tft.println("A: Settings  B: Sync  C: WordClock");
 }
 
 void displaySettingsMenu(Adafruit_ST7789& tft, int selectedIndex, const String& timezone, const String& dst, const String& brightness, const String& save) {
@@ -725,4 +757,67 @@ void displaySettingsMenu(Adafruit_ST7789& tft, int selectedIndex, const String& 
 void clearAllDisplays(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix) {
   clearTFTScreen(tft);
   clearNeoMatrix(matrix);
+}
+
+// WordClock display functions
+void displayWordClockMode(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, struct tm* timeinfo) {
+  if (!timeinfo) {
+    Serial.println("Display: Invalid time info for WordClock mode");
+    return;
+  }
+  
+  // Clear TFT and show WordClock status
+  clearTFTScreen(tft);
+  
+  // Display WordClock header on TFT
+  tft.setTextColor(ST77XX_GREEN);
+  tft.setTextSize(2);
+  tft.setCursor(10, 10);
+  tft.println("WordClock Mode");
+  
+  // Draw separator line
+  tft.drawLine(10, 35, 230, 35, ST77XX_GREEN);
+  
+  // Display current time on TFT for reference
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(20, 50);
+  tft.printf("%02d:%02d:%02d", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+  
+  // Display date
+  tft.setTextSize(1);
+  tft.setCursor(30, 80);
+  tft.setTextColor(ST77XX_CYAN);
+  tft.printf("%04d-%02d-%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
+  
+  // Display WordClock status
+  tft.setCursor(10, 100);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.println("Matrix: Active");
+  
+  // Display instructions
+  tft.setCursor(10, 115);
+  tft.setTextColor(0x7BEF); // Light gray
+  tft.println("A: Settings  B: Sync  C: WiFi");
+  
+  // Adjust brightness based on time
+  adjustWordClockBrightness(timeinfo);
+  
+  // Display time on WordClock matrix
+  displayWordClockTime(timeinfo);
+}
+
+void showWordClockStartup(Adafruit_NeoMatrix& matrix) {
+  Serial.println("Display: Starting WordClock startup sequence");
+  
+  // Initialize WordClock
+  initializeWordClock(matrix);
+  
+  // Show rainbow cycle
+  rainbowCycle(5);
+  
+  // Flash all words
+  flashWords();
+  
+  Serial.println("Display: WordClock startup sequence complete");
 }

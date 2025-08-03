@@ -22,6 +22,100 @@ void StateMachine::changeState(SystemState newState) {
   }
 }
 
+void StateMachine::handleWordClockDisplayState() {
+  Serial.printf("[STATE_WORDCLOCK_DISPLAY] Free Heap: %d, Min Free: %d\n", 
+                ESP.getFreeHeap(), ESP.getMinFreeHeap());
+  
+  // Initialize WordClock on first entry
+  static bool wordClockInitialized = false;
+  if (stateChanged && !wordClockInitialized) {
+    Serial.println("[WORDCLOCK_DISPLAY] Initializing WordClock...");
+    showWordClockStartup(matrix);
+    wordClockInitialized = true;
+  }
+  
+  // Update display when needed
+  static unsigned long lastDisplayUpdate = 0;
+  unsigned long currentTime = millis();
+  
+  if (stateChanged || displayNeedsUpdate || (currentTime - lastDisplayUpdate > 1000)) {
+    // Get current time from time manager
+    if (timeManager.getSyncStatus() == TIME_SYNC_SUCCESS) {
+      // Create a tm struct from TimeManager data
+      struct tm timeinfo;
+      timeinfo.tm_hour = timeManager.getHours();
+      timeinfo.tm_min = timeManager.getMinutes();
+      timeinfo.tm_sec = timeManager.getSeconds();
+      timeinfo.tm_mday = timeManager.getDay();
+      timeinfo.tm_mon = timeManager.getMonth() - 1; // tm_mon is 0-based
+      timeinfo.tm_year = timeManager.getYear() - 1900; // tm_year is years since 1900
+      
+      // Display WordClock mode (TFT shows status, matrix shows time as words)
+      displayWordClockMode(tft, matrix, &timeinfo);
+      
+      lastDisplayUpdate = currentTime;
+      stateChanged = false;
+      displayNeedsUpdate = false;
+      
+      Serial.printf("[WORDCLOCK_DISPLAY] Time: %02d:%02d:%02d\n", 
+                    timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+    } else {
+      // Time not synced, show error on TFT
+      clearTFTScreen(tft);
+      tft.setTextColor(ST77XX_RED);
+      tft.setTextSize(2);
+      tft.setCursor(10, 50);
+      tft.println("Time Not Synced");
+      tft.setTextSize(1);
+      tft.setCursor(10, 80);
+      tft.println("Press B to sync time");
+    }
+  }
+  
+  // Handle button inputs for navigation and settings
+  ButtonEvent buttonEvent = handleButtons();
+  switch (buttonEvent) {
+    case BUTTON_A_PRESSED:
+      // Go to settings menu
+      Serial.println("Settings button pressed - going to settings");
+      changeState(STATE_SETTINGS);
+      break;
+      
+    case BUTTON_B_PRESSED:
+      // Force time sync
+      Serial.println("Force sync button pressed");
+      if (timeManager.forceSync()) {
+        Serial.println("Time sync successful!");
+        displayNeedsUpdate = true;
+      } else {
+        Serial.println("Time sync failed!");
+        displayNeedsUpdate = true;
+      }
+      break;
+      
+    case BUTTON_C_PRESSED:
+      // Switch back to regular clock display
+      Serial.println("Switching to regular clock display");
+      changeState(STATE_CLOCK_DISPLAY);
+      break;
+      
+    case NO_BUTTON:
+      // Stay in WordClock display state
+      break;
+  }
+  
+  // Check if time sync is needed periodically
+  if (timeManager.needsTimeSync()) {
+    Serial.println("[WORDCLOCK_DISPLAY] Time sync needed, attempting sync...");
+    if (timeManager.syncTime()) {
+      Serial.println("[WORDCLOCK_DISPLAY] Background sync successful");
+      displayNeedsUpdate = true;
+    } else {
+      Serial.println("[WORDCLOCK_DISPLAY] Background sync failed");
+    }
+  }
+}
+
 SystemState StateMachine::getCurrentState() const {
   return currentState;
 }
@@ -99,6 +193,10 @@ void StateMachine::update() {
       
     case STATE_CLOCK_DISPLAY:
       handleClockDisplayState();
+      break;
+      
+    case STATE_WORDCLOCK_DISPLAY:
+      handleWordClockDisplayState();
       break;
   }
 }
@@ -590,9 +688,9 @@ void StateMachine::handleClockDisplayState() {
       break;
       
     case BUTTON_C_PRESSED:
-      // Go back to WiFi settings
-      Serial.println("WiFi settings button pressed");
-      changeState(STATE_WIFI_DISPLAY);
+      // Switch to WordClock display mode
+      Serial.println("WordClock mode button pressed");
+      changeState(STATE_WORDCLOCK_DISPLAY);
       break;
       
     case NO_BUTTON:

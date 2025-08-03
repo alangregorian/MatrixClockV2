@@ -5,6 +5,7 @@
 #include <Adafruit_ST7789.h>
 #include <Adafruit_NeoMatrix.h>
 #include "wifi_manager.h"
+#include "wordclock_manager.h"
 
 // Function declarations
 void initializeDisplay(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix);
@@ -30,5 +31,9 @@ void displaySettingsMenu(Adafruit_ST7789& tft, int selectedIndex, const String& 
 void clearTFTScreen(Adafruit_ST7789& tft, uint16_t color = ST77XX_BLACK);
 void clearNeoMatrix(Adafruit_NeoMatrix& matrix);
 void clearAllDisplays(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix);
+
+// WordClock display functions
+void displayWordClockMode(Adafruit_ST7789& tft, Adafruit_NeoMatrix& matrix, struct tm* timeinfo);
+void showWordClockStartup(Adafruit_NeoMatrix& matrix);
 
 #endif // DISPLAY_MANAGER_H

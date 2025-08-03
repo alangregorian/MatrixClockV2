@@ -26,6 +26,7 @@
 #include "include/state_machine.h"
 #include "include/time_manager.h"
 #include "include/settings_manager.h"
+#include "include/wordclock_manager.h"
 
 // TFT Display pins are predefined by ESP32-S2 Reverse TFT Feather board variant
 // TFT_CS = 42, TFT_RST = 41, TFT_DC = 40, TFT_MOSI = 35, TFT_SCLK = 36, TFT_BACKLIGHT = 45
@@ -35,8 +36,8 @@ const int BUTTON_A = 0;       // D0 (also BOOT button)
 const int BUTTON_B = 1;       // D1
 const int BUTTON_C = 2;       // D2
 
-// NeoMatrix pin
-const int NEOPIN = 6;
+// NeoMatrix pin - connected to pin 6
+#define NEOPIN 6
 
 // Global hardware objects
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
@@ -75,6 +76,13 @@ void setup() {
   Serial.flush();
   initializeDisplay(tft, matrix);
   Serial.println("DEBUG: Display initialized successfully");
+  Serial.flush();
+  
+  // Test the NeoMatrix immediately to verify it works
+  Serial.println("DEBUG: Testing NeoMatrix with comprehensive test...");
+  Serial.flush();
+  testNeoMatrix(matrix);
+  Serial.println("DEBUG: NeoMatrix test completed");
   Serial.flush();
   
   // Initialize WiFi

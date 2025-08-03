@@ -24,7 +24,8 @@ enum SystemState {
   STATE_WIFI_CONNECT,    // Future expansion
   STATE_SETTINGS,        // Settings configuration (timezone, DST, brightness)
   STATE_TIME_SYNC,       // Time synchronization
-  STATE_CLOCK_DISPLAY    // Main clock display
+  STATE_CLOCK_DISPLAY,   // Main clock display
+  STATE_WORDCLOCK_DISPLAY // WordClock matrix display mode
 };
 
 class StateMachine {
@@ -76,6 +77,7 @@ public:
   void handleSettingsState();
   void handleTimeSyncState();
   void handleClockDisplayState();
+  void handleWordClockDisplayState();
 };
 
 #endif // STATE_MACHINE_H
