@@ -25,6 +25,7 @@ extern const unsigned long DEBOUNCE_DELAY;
 
 // Function declarations
 void initializeButtons();
+void initializeUnusedPins();
 ButtonEvent handleButtons();
 
 #endif // BUTTON_HANDLER_H

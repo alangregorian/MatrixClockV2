@@ -16,6 +16,54 @@ void initializeButtons() {
   Serial.println("Buttons initialized");
 }
 
+void initializeUnusedPins() {
+  Serial.println("Initializing specific pin headers with pull-down resistors...");
+  
+  // Conservative approach: Only initialize specific pins that are exposed as headers
+  // and causing false button detections when touched
+  
+  // Analog pins A0-A5 (these are exposed as pin headers)
+  // A0, A1 are DAC outputs (ADC2), A2-A4 are ADC2, A5 is ADC1
+  pinMode(A0, INPUT_PULLDOWN);
+  Serial.printf("Pin A0 set to INPUT_PULLDOWN\n");
+  
+  pinMode(A1, INPUT_PULLDOWN);
+  Serial.printf("Pin A1 set to INPUT_PULLDOWN\n");
+  
+  pinMode(A2, INPUT_PULLDOWN);
+  Serial.printf("Pin A2 set to INPUT_PULLDOWN\n");
+  
+  pinMode(A3, INPUT_PULLDOWN);
+  Serial.printf("Pin A3 set to INPUT_PULLDOWN\n");
+  
+  pinMode(A4, INPUT_PULLDOWN);
+  Serial.printf("Pin A4 set to INPUT_PULLDOWN\n");
+  
+  pinMode(A5, INPUT_PULLDOWN);
+  Serial.printf("Pin A5 set to INPUT_PULLDOWN\n");
+  
+  // Digital pins 5, 9-13 (these are exposed as pin headers)
+  pinMode(5, INPUT_PULLDOWN);
+  Serial.printf("Pin 5 set to INPUT_PULLDOWN\n");
+  
+  pinMode(9, INPUT_PULLDOWN);
+  Serial.printf("Pin 9 set to INPUT_PULLDOWN\n");
+  
+  pinMode(10, INPUT_PULLDOWN);
+  Serial.printf("Pin 10 set to INPUT_PULLDOWN\n");
+  
+  pinMode(11, INPUT_PULLDOWN);
+  Serial.printf("Pin 11 set to INPUT_PULLDOWN\n");
+  
+  pinMode(12, INPUT_PULLDOWN);
+  Serial.printf("Pin 12 set to INPUT_PULLDOWN\n");
+  
+  pinMode(13, INPUT_PULLDOWN);
+  Serial.printf("Pin 13 set to INPUT_PULLDOWN\n");
+  
+  Serial.println("Specific pin headers initialized with pull-down resistors");
+}
+
 ButtonEvent handleButtons() {
   unsigned long currentTime = millis();
   

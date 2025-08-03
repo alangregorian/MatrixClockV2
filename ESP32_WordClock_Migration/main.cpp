@@ -72,6 +72,12 @@ void setup() {
   Serial.println("DEBUG: Buttons initialized successfully");
   Serial.flush();
   
+  Serial.println("DEBUG: About to initialize unused pins");
+  Serial.flush();
+  initializeUnusedPins();
+  Serial.println("DEBUG: Unused pins initialized successfully");
+  Serial.flush();
+  
   Serial.println("DEBUG: About to initialize display");
   Serial.flush();
   initializeDisplay(tft, matrix);

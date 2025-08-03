@@ -1,5 +1,72 @@
 # WordClock Version History
 
+## Version 0.6.1 (Floating Pin Fix)
+**Date**: August 3, 2025
+**Bug Fixes**:
+- **MAJOR**: Fixed boot failure caused by aggressive pin initialization that interfered with critical system pins
+- **MAJOR**: Resolved false button detections when touching pin headers on ESP32-S2 board
+- Replaced broad pin initialization (GPIO 3-21, 26-44) with conservative approach targeting only specific exposed pins
+- Added pull-down resistors to specific pin headers: A0-A5 (analog pins) and pins 5, 9-13 (digital pins)
+- Eliminated floating pin issue that caused capacitive coupling and electrical noise interference
+
+**Technical Improvements**:
+- Conservative pin initialization approach that avoids critical system pins
+- Targeted only pins exposed as headers that were causing false detections
+- Proper handling of ESP32-S2 analog pins (A0-A5) with INPUT_PULLDOWN configuration
+- Safe initialization of digital pins 5, 9-13 without affecting boot process
+- Enhanced debug output showing which specific pins are being configured
+
+**Impact**: 
+- System now boots reliably without interference from pin initialization
+- False button detections eliminated when touching pin headers
+- Maintains electrical noise immunity while preserving system stability
+- Conservative approach ensures compatibility with future hardware additions
+
+## Version 0.6.0 (NeoPixel & NeoMatrix Integration)
+**Date**: August 2025
+**Major Features Added**:
+- **NEW**: Complete NeoPixel/NeoMatrix support with 8x8 LED matrix functionality
+- **NEW**: NeoMatrix initialization and testing system with comprehensive test patterns
+- **NEW**: Integration of NeoMatrix display with existing TFT display system
+- **NEW**: Added `testNeoMatrix()` function with startup verification patterns
+- **NEW**: NeoMatrix configuration for 8x8 matrix with proper pin mapping (GPIO 6)
+
+**NeoMatrix Features**:
+- **8x8 LED Matrix Support**: Full Adafruit NeoMatrix integration with 64 individually addressable LEDs
+- **Comprehensive Test Patterns**: Startup test sequence to verify matrix functionality
+- **Dual Display System**: Seamless integration between TFT display and NeoMatrix
+- **Hardware Configuration**: Proper matrix orientation and color order (NEO_GRB + NEO_KHZ800)
+- **Pin 6 Integration**: Dedicated GPIO 6 for NeoMatrix data signal
+
+**Display Manager Enhancements**:
+- **NeoMatrix Initialization**: Added matrix setup and configuration functions
+- **Test Pattern System**: Comprehensive testing patterns for hardware verification
+- **Display Coordination**: Proper coordination between TFT and NeoMatrix displays
+- **Error Handling**: Robust initialization with fallback behavior
+
+**Technical Improvements**:
+- **Adafruit NeoMatrix Library**: Full integration with Adafruit NeoMatrix and NeoPixel libraries
+- **Memory Management**: Efficient matrix buffer management for 64 LEDs
+- **Hardware Abstraction**: Clean separation between display types
+- **Modular Architecture**: NeoMatrix functionality integrated into existing display manager
+
+**Hardware Support**:
+- **8x8 NeoMatrix**: Support for standard 8x8 WS2812B LED matrices
+- **GPIO 6 Data Pin**: Dedicated pin for NeoMatrix communication
+- **Power Management**: Proper power considerations for LED matrix operation
+- **Signal Integrity**: Proper timing and signal handling for WS2812B protocol
+
+**User Experience Enhancements**:
+- **Visual Feedback**: LED matrix provides additional visual feedback during operation
+- **Startup Verification**: Immediate visual confirmation that NeoMatrix is working
+- **Dual Display Benefits**: Both compact TFT info and large LED matrix display
+- **Hardware Validation**: Built-in testing ensures proper hardware connections
+
+**Development Tools**:
+- **neopixel_test.ino**: Standalone test file for NeoPixel development and debugging
+- **Comprehensive Testing**: Multiple test patterns for different validation scenarios
+- **Debug Integration**: NeoMatrix status integrated into serial debug output
+
 ## Version 0.5.0 (Timezone & DST Management System)
 **Date**: July 27, 2025
 **Major Features Added**:
